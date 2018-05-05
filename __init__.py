@@ -46,7 +46,7 @@ def get_bonechain_id(val):
             return a[-1]
 
 def register():
-    bpy.types.Scene.NameTemplate = StringProperty(name="Bone template",default = 'bip_bone_{}')
+    bpy.types.Scene.NameTemplate = StringProperty(name="Bone template",default = 'bip_bone_{1}')
     bpy.types.Scene.LeftEye = FloatVectorProperty(name="Left eye")
     bpy.types.Scene.RightEye = FloatVectorProperty(name="Right eye")
     bpy.types.Scene.Armature = bpy.props.StringProperty(

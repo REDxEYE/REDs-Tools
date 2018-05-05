@@ -73,7 +73,10 @@ class RenameChainButton(bpy.types.Operator):
         if (o.select and o.type == 'ARMATURE'):
             for b,bone in enumerate(context.selected_pose_bones):
                 n = 0
-                bone.name = context.scene.NameTemplate.format(b,n)
+                if "{1}" in context.NameTemplate and "{0}" in context.NameTemplate:
+                    bone.name = context.scene.NameTemplate.format(b,n)
+                else:
+                    bone.name = context.scene.NameTemplate.format(n)
                 while bone.children:
                     n += 1
                     bone = bone.children[0]

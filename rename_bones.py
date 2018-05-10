@@ -1,7 +1,10 @@
 import bpy
 import mathutils
 from bpy.props import *
-from . import bone_table
+try:
+    from . import bone_table
+except ImportError:
+    import bone_table
 
 
 
@@ -73,14 +76,17 @@ class RenameChainButton(bpy.types.Operator):
         if (o.select and o.type == 'ARMATURE'):
             for b,bone in enumerate(context.selected_pose_bones):
                 n = 0
-                if "{1}" in context.NameTemplate and "{0}" in context.NameTemplate:
+                if "{1}" in context.scene.NameTemplate or "{0}" in context.scene.NameTemplate:
                     bone.name = context.scene.NameTemplate.format(b,n)
                 else:
                     bone.name = context.scene.NameTemplate.format(n)
                 while bone.children:
                     n += 1
                     bone = bone.children[0]
-                    bone.name = context.scene.NameTemplate.format(b,n)
+                    if "{1}" in context.scene.NameTemplate or "{0}" in context.scene.NameTemplate:
+                        bone.name = context.scene.NameTemplate.format(b, n)
+                    else:
+                        bone.name = context.scene.NameTemplate.format(n)
         return {'FINISHED'}
 
 class ConnectBones(bpy.types.Operator):

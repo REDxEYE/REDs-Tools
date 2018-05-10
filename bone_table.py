@@ -1,4 +1,7 @@
-from .MultiDict import MultiDict
+try:
+    from .MultiDict import MultiDict
+except ImportError:
+    from MultiDict import MultiDict
 
 bone_table_valvebiped = MultiDict({
     ('mixamorig:Hips', 'pelvis',): "ValveBiped.Bip01_Pelvis",
@@ -88,18 +91,18 @@ bone_table_bip = MultiDict({
     ('mixamorig:RightHandThumb1','fing.Thumb0.r'):"bip_thumb_0_R",
     ('mixamorig:RightHandThumb2','fing.Thumb1.r'):"bip_thumb_1_R",
     ('mixamorig:RightHandThumb3','fing.Thumb2.r'):"bip_thumb_2_R",
-    ('mixamorig:RightHandIndex1','fing.Index0.r'):"bip_thumb_0_R",
-    ('mixamorig:RightHandIndex2','fing.Index1.r'):"bip_thumb_1_R",
-    ('mixamorig:RightHandIndex3','fing.Index2.r'):"bip_thumb_2_R",
-    ('mixamorig:RightHandMiddle1','fing.Middle0.r'):"bip_index_0_R",
-    ('mixamorig:RightHandMiddle2','fing.Middle1.r'):"bip_index_1_R",
-    ('mixamorig:RightHandMiddle3','fing.Middle2.r'):"bip_index_2_R",
-    ('mixamorig:RightHandRing1','fing.Ring0.r'):"bip_index_0_R",
-    ('mixamorig:RightHandRing2','fing.Ring1.r'):"bip_index_1_R",
-    ('mixamorig:RightHandRing3','fing.Ring2.r'):"bip_index_2_R",
-    ('mixamorig:RightHandPinky1','fing.Pinky0.r'):"bip_middle_0_R",
-    ('mixamorig:RightHandPinky2','fing.Pinky1.r'):"bip_middle_1_R",
-    ('mixamorig:RightHandPinky3','fing.Pinky2.r'):"bip_middle_2_R",
+    ('mixamorig:RightHandIndex1','fing.Index0.r'):"bip_index_0_R",
+    ('mixamorig:RightHandIndex2','fing.Index1.r'):"bip_index_1_R",
+    ('mixamorig:RightHandIndex3','fing.Index2.r'):"bip_index_2_R",
+    ('mixamorig:RightHandMiddle1','fing.Middle0.r'):"bip_middle_0_R",
+    ('mixamorig:RightHandMiddle2','fing.Middle1.r'):"bip_middle_1_R",
+    ('mixamorig:RightHandMiddle3','fing.Middle2.r'):"bip_middle_2_R",
+    ('mixamorig:RightHandRing1','fing.Ring0.r'):"bip_ring_0_R",
+    ('mixamorig:RightHandRing2','fing.Ring1.r'):"bip_ring_1_R",
+    ('mixamorig:RightHandRing3','fing.Ring2.r'):"bip_ring_2_R",
+    ('mixamorig:RightHandPinky1','fing.Pinky0.r'):"bip_pinky_0_R",
+    ('mixamorig:RightHandPinky2','fing.Pinky1.r'):"bip_pinky_1_R",
+    ('mixamorig:RightHandPinky3','fing.Pinky2.r'):"bip_pinky_2_R",
     ('mixamorig:LeftUpLeg', 'hip_l', 'hip.l'): "bip_hip_L",
     ('mixamorig:LeftLeg', 'knee_l','knee.l'): "bip_knee_L",
     ('mixamorig:LeftFoot','foot_l','foot.l'): "bip_foot_L",

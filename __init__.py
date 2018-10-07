@@ -4,18 +4,19 @@ from bpy.props import *
 
 from . import ValvePanel
 from . import rename_bones
+from .TextureTools import split_alpha
 
 bl_info = {
-    "name": "Valve armature tools",
+    "name": "RED's Tools",
     "author": "RED_EYE",
-    "version": (0, 1),
+    "version": (0, 3),
     "blender": (2, 79, 0),
-    # "location": "File > Import-Export > SourceEngine MDL (.mdl, .vvd, .vtx) ",
     "description": "Tools for preparing armature for Source Engine export",
     # 'warning': 'May crash blender',
     # "wiki_url": "http://www.barneyparker.com/blender-json-import-export-plugin",
     # "tracker_url": "http://www.barneyparker.com/blender-json-import-export-plugin",
-    "category": "Rigging"}
+    "category": "Tools"
+}
 import importlib
 
 importlib.reload(rename_bones)
@@ -44,10 +45,27 @@ bone_chains = [
 ]
 
 
+class AlphaSplit(bpy.types.Operator):
+    """Extracts alpha to new file"""
+    bl_idname = "alpha.split"
+    bl_label = "Split alpha"
+    bl_options = {'UNDO'}
+
+    def execute(self, context):
+        sima = context.space_data
+        ima = sima.image
+        split_alpha(ima)
+        return {'FINISHED'}
+
+
 def get_bonechain_id(val):
     for a in bone_chains:
         if a[0] == val:
             return a[-1]
+
+
+def split_alpha_menu(self, context):
+    self.layout.operator(AlphaSplit.bl_idname, text='Split alpha')
 
 
 def register():
@@ -84,9 +102,12 @@ def register():
     bpy.utils.register_class(ValvePanel.CreateEyeDummys)
     bpy.utils.register_class(ValvePanel.QCEyesPopup)
     bpy.utils.register_class(ValvePanel.CleanBones)
+    bpy.utils.register_class(ValvePanel.CleanBonesConstraints)
     bpy.utils.register_class(ValvePanel.RenameBoneChains)
     bpy.utils.register_class(ValvePanel.RenameChainPopup)
     bpy.utils.register_class(ValvePanel.QCEyesQCGenerator)
+    bpy.utils.register_class(AlphaSplit)
+    bpy.types.IMAGE_MT_image.append(split_alpha_menu)
 
 
 def unregister():
@@ -113,9 +134,12 @@ def unregister():
     bpy.utils.unregister_class(ValvePanel.CreateEyeDummys)
     bpy.utils.unregister_class(ValvePanel.QCEyesPopup)
     bpy.utils.unregister_class(ValvePanel.CleanBones)
+    bpy.utils.unregister_class(ValvePanel.CleanBonesConstraints)
     bpy.utils.unregister_class(ValvePanel.RenameBoneChains)
     bpy.utils.unregister_class(ValvePanel.RenameChainPopup)
     bpy.utils.unregister_class(ValvePanel.QCEyesQCGenerator)
+    bpy.utils.unregister_class(AlphaSplit)
+    bpy.types.IMAGE_MT_image.remove(split_alpha_menu)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,9 @@
 import bpy
-import mathutils
+
 from bpy.props import *
 
 from .bone_table import bone_table_valvebiped, bone_table_bip
+
 
 class ValvePanel(bpy.types.Panel):
     bl_idname = 'valve.panel'
@@ -49,6 +50,7 @@ class ValvePanel(bpy.types.Panel):
         layout.label("Work with active armature")
         box = layout.box()
         box.operator("valve.cleanbones")
+        box.operator("valve.cleanbonesconstraints")
         box.operator("rename.biped")
         box.operator("rename.bip")
         column = box.column()
@@ -123,6 +125,24 @@ class CleanBones(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class CleanBonesConstraints(bpy.types.Operator):
+    bl_idname = "valve.cleanbonesconstraints"
+    bl_label = "Remove constraints"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        ob = context.active_object
+        if ob.type == "ARMATURE":
+            for bone in ob.pose.bones:
+                for c in bone.constraints:
+                    bone.constraints.remove(c)
+        else:
+            self.report({"ERROR"},
+                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
+                        .format(ob.type.lower()))
+        return {'FINISHED'}
+
+
 class QCEyesQCGenerator(bpy.types.Operator):
     bl_idname = "qceyes.generate_qc"
     bl_label = "Generate QC string"
@@ -167,8 +187,11 @@ class QCEyesQCGenerator(bpy.types.Operator):
                                                   size=eye_r.scale.x))
             qc_string.write('\n')
 
-            qc_string.write(flexcont_string.format(angle1 = bpy.context.scene.EyesUp,angle2 = bpy.context.scene.EyesDown,fc_type = 'eyes_updown'))
-            qc_string.write(flexcont_string.format(angle1 = bpy.context.scene.EyesRight,angle2 = bpy.context.scene.EyesLeft,fc_type = 'eyes_rightleft'))
+            qc_string.write(flexcont_string.format(angle1=bpy.context.scene.EyesUp, angle2=bpy.context.scene.EyesDown,
+                                                   fc_type='eyes_updown'))
+            qc_string.write(
+                flexcont_string.format(angle1=bpy.context.scene.EyesRight, angle2=bpy.context.scene.EyesLeft,
+                                       fc_type='eyes_rightleft'))
 
         else:
             self.report({"ERROR"},
@@ -204,6 +227,7 @@ class QCEyesPopup(bpy.types.Operator):
 
     def execute(self, context):
         return {'FINISHED'}
+
 
 def get_bonechain(val):
     bone_chains = {

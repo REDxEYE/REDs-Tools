@@ -4,7 +4,7 @@ from bpy.props import *
 
 from . import ValvePanel
 from . import rename_bones
-from .TextureTools import split_alpha
+from . import TextureTools
 
 bl_info = {
     "name": "RED's Tools",
@@ -54,7 +54,7 @@ class AlphaSplit(bpy.types.Operator):
     def execute(self, context):
         sima = context.space_data
         ima = sima.image
-        split_alpha(ima)
+        TextureTools.split_alpha(ima)
         return {'FINISHED'}
 
 

@@ -9,7 +9,7 @@ except ImportError:
     import bone_table
 
 
-class RenamePanel(bpy.types.Panel):
+class BONE_PT_RenamePanel(bpy.types.Panel):
     bl_idname = "Armature.SourceEngineTools"
     bl_label = "Source Engine armature tools"
 
@@ -39,26 +39,26 @@ class RenamePanel(bpy.types.Panel):
         row.operator('armature.connect')
 
 
-class RenameButtonValveBiped(bpy.types.Operator):
+class BONE_OT_RenameButtonValveBiped(bpy.types.Operator):
     bl_idname = "rename.biped"
     bl_label = "Convert to ValveBiped"
 
     def execute(self, context):
         o = context.object
-        if (o.select and o.type == 'ARMATURE'):
+        if (o.select_get() and o.type == 'ARMATURE'):
             for name, bone in o.data.bones.items():
                 if name in bone_table.bone_table_bip:
                     bone.name = bone_table.bone_table_valvebiped[name]
         return {'FINISHED'}
 
 
-class RenameButtonBip(bpy.types.Operator):
+class BONE_OT_RenameButtonBip(bpy.types.Operator):
     bl_idname = "rename.bip"
     bl_label = "Convert to Bip"
 
     def execute(self, context):
         o = context.object
-        if (o.select and o.type == 'ARMATURE'):
+        if (o.select_get() and o.type == 'ARMATURE'):
             for name, bone in o.data.bones.items():
                 if name in bone_table.bone_table_bip:
                     bone.name = bone_table.bone_table_bip[name]
@@ -94,14 +94,14 @@ class RenameButtonBip(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class RenameChainButton(bpy.types.Operator):
+class BONE_OT_RenameChainButton(bpy.types.Operator):
     bl_idname = "rename.chain"
     bl_label = "Rename chain of bones"
 
     def execute(self, context):
         o = context.object
-        if (o.select and o.type == 'ARMATURE'):
-            for b, bone in enumerate(context.selected_pose_bones):
+        if (o.select_get() and o.type == 'ARMATURE'):
+            for b, bone in enumerate(context.selected_pose_bones_from_active_object):
                 n = 0
                 if "{1}" in context.scene.NameTemplate or "{0}" in context.scene.NameTemplate:
                     bone.name = context.scene.NameTemplate.format(b, n)
@@ -117,7 +117,7 @@ class RenameChainButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class ConnectBones(bpy.types.Operator):
+class BONE_OT_ConnectBones(bpy.types.Operator):
     bl_idname = "armature.connect"
     bl_label = "Connect bones"
 
@@ -150,4 +150,28 @@ class ConnectBones(bpy.types.Operator):
 
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
         bpy.ops.object.mode_set(mode='POSE')
+        return {'FINISHED'}
+
+
+class BONE_OT_MergeBones(bpy.types.Operator):
+    bl_idname = "armature.merge"
+    bl_label = "Merge bones"
+
+    def execute(self, context):
+        this = context.active_pose_bone
+        others = context.selected_pose_bones[1:]
+        arm = this.id_data
+        for child in arm.children:
+            for other in others:
+                # print(child)
+                if child.type == 'MESH':
+                    modifier = child.modifiers.new(type='VERTEX_WEIGHT_MIX', name='MERGE_TO_{}'.format(this.name))
+                    # print(modifier, this, other)
+                    # print(child, child.type, modifier, this, other)
+                    modifier.vertex_group_a = this.name
+                    modifier.vertex_group_b = other.name
+                    modifier.mix_mode = 'ADD'
+                    modifier.mix_set = 'ALL'
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+
         return {'FINISHED'}

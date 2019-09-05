@@ -5,22 +5,21 @@ from bpy.props import *
 from .bone_table import bone_table_valvebiped, bone_table_bip
 
 
-class ValvePanel(bpy.types.Panel):
+class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
     bl_idname = 'valve.panel'
     bl_label = 'Source engine tools'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
-    bl_category = 'Valve'
 
     def draw(self, context):
         scn = context.scene
         layout = self.layout
         row = layout.row()
-        row.label("Target armature")
+        row.label(text = "Target armature")
         row.prop_search(scn, "Armature", scn, "objects", text='')
 
         layout.separator()
-        layout.label("QC eyes")
+        layout.label(text = "QC eyes")
         box = layout.box()
         column = box.column(align=True)
         column.operator("qceyes.popup")
@@ -46,8 +45,8 @@ class ValvePanel(bpy.types.Panel):
             row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
 
         layout.separator()
-        layout.label("Armature tools")
-        layout.label("Work with active armature")
+        layout.label(text = "Armature tools")
+        layout.label(text = "Work with active armature")
         box = layout.box()
         box.operator("valve.cleanbones")
         box.operator("valve.cleanbonesconstraints")
@@ -57,13 +56,14 @@ class ValvePanel(bpy.types.Panel):
         column.prop(scn, 'NameTemplate')
         column.operator('rename.chain')
         box.operator('armature.connect')
+        box.operator('armature.merge')
 
         layout.separator()
-        layout.label("Rename tools")
+        layout.label(text = "Rename tools")
         box = layout.box()
         box.operator("valve.renamechainpopup")
         box.separator()
-        box.label('Choose name format')
+        box.label(text = 'Choose name format')
         box.prop(scn, 'NameFormat')
         box.separator()
         box.prop(scn, 'BoneChains')
@@ -80,7 +80,7 @@ def track_r_eye(_):
     bpy.context.scene.RightEye = obj.location
 
 
-class CreateEyeDummys(bpy.types.Operator):
+class EYE_OT_CreateEyeDummys(bpy.types.Operator):
     bl_idname = "create.eyedummy"
     bl_label = "Create eye dummies"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -108,7 +108,7 @@ eyeball_string = 'eyeball {eyeball_side} "{p_bone}" {x} {y} {z} "{mat_name}" 3 {
 flexcont_string = 'flexcontroller eyes range -{angle1} {angle2} {fc_type}\n'
 
 
-class CleanBones(bpy.types.Operator):
+class BONES_OT_CleanBones(bpy.types.Operator):
     bl_idname = "valve.cleanbones"
     bl_label = "Remove custom shapes"
     bl_options = {'REGISTER', 'UNDO'}
@@ -125,7 +125,7 @@ class CleanBones(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class CleanBonesConstraints(bpy.types.Operator):
+class BONES_OT_CleanBonesConstraints(bpy.types.Operator):
     bl_idname = "valve.cleanbonesconstraints"
     bl_label = "Remove constraints"
     bl_options = {'REGISTER', 'UNDO'}
@@ -143,7 +143,7 @@ class CleanBonesConstraints(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class QCEyesQCGenerator(bpy.types.Operator):
+class BONES_OT_QCEyesQCGenerator(bpy.types.Operator):
     bl_idname = "qceyes.generate_qc"
     bl_label = "Generate QC string"
     bl_options = {'REGISTER', 'UNDO'}
@@ -203,7 +203,7 @@ def avg(*args):
     return sum(args) / len(args)
 
 
-class QCEyesPopup(bpy.types.Operator):
+class EYES_TP_QCEyesPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "qceyes.popup"
     bl_label = "QC eyes how to use!"
@@ -264,7 +264,7 @@ def find_line_of_sight(start, end):
     return chain
 
 
-class RenameBoneChains(bpy.types.Operator):
+class BONES_OT_RenameBoneChains(bpy.types.Operator):
     bl_idname = "valve.renamechain"
     bl_label = "Rename chain"
     bl_options = {'REGISTER', 'UNDO'}
@@ -287,9 +287,14 @@ class RenameBoneChains(bpy.types.Operator):
             if current_chain in ['LARM', 'RARM', 'LLEG', 'RLEG']:
                 if len(bones) == 3:
                     bone_names = bone_names[:-1]
-            bone_names = bone_names[::-1]
-            for n, bone in enumerate(bones):
-                bone.name = name_dict[bone_names[n]]
+            if len(bones)==2:
+                bone_names = bone_names
+                for n, bone in enumerate(bones[::-1]):
+                    bone.name = name_dict[bone_names[n]]
+            else:
+                bone_names = bone_names[::-1]
+                for n, bone in enumerate(bones):
+                    bone.name = name_dict[bone_names[n]]
             # start_bone = context.selected
         else:
             self.report({"ERROR"},
@@ -297,7 +302,7 @@ class RenameBoneChains(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class RenameChainPopup(bpy.types.Operator):
+class BONES_TP_RenameChainPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "valve.renamechainpopup"
     bl_label = "How to use rename limb !"

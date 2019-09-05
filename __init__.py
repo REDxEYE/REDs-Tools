@@ -2,15 +2,15 @@ import bpy
 
 from bpy.props import *
 
+from . import TextureTools
 from . import ValvePanel
 from . import rename_bones
-from . import TextureTools
 
 bl_info = {
     "name": "RED's Tools",
     "author": "RED_EYE",
     "version": (0, 3),
-    "blender": (2, 79, 0),
+    "blender": (2, 80, 0),
     "description": "Tools for preparing armature for Source Engine export",
     # 'warning': 'May crash blender',
     # "wiki_url": "http://www.barneyparker.com/blender-json-import-export-plugin",
@@ -45,7 +45,7 @@ bone_chains = [
 ]
 
 
-class AlphaSplit(bpy.types.Operator):
+class IMAGE_MT_AlphaSplit(bpy.types.Operator):
     """Extracts alpha to new file"""
     bl_idname = "alpha.split"
     bl_label = "Split alpha"
@@ -65,7 +65,27 @@ def get_bonechain_id(val):
 
 
 def split_alpha_menu(self, context):
-    self.layout.operator(AlphaSplit.bl_idname, text='Split alpha')
+    self.layout.operator(IMAGE_MT_AlphaSplit.bl_idname, text='Split alpha')
+
+
+classes = [
+    rename_bones.BONE_OT_RenameButtonBip,
+    rename_bones.BONE_OT_RenameButtonValveBiped,
+    rename_bones.BONE_PT_RenamePanel,
+    rename_bones.BONE_OT_RenameChainButton,
+    rename_bones.BONE_OT_ConnectBones,
+    rename_bones.BONE_OT_MergeBones,
+    ValvePanel.SOURCEENG_TP_ValvePanel,
+    ValvePanel.EYE_OT_CreateEyeDummys,
+    ValvePanel.EYES_TP_QCEyesPopup,
+    ValvePanel.BONES_OT_CleanBones,
+    ValvePanel.BONES_OT_CleanBonesConstraints,
+    ValvePanel.BONES_OT_RenameBoneChains,
+    ValvePanel.BONES_TP_RenameChainPopup,
+    ValvePanel.BONES_OT_QCEyesQCGenerator,
+    IMAGE_MT_AlphaSplit
+]
+register_, unregister_ = bpy.utils.register_classes_factory(classes)
 
 
 def register():
@@ -76,15 +96,9 @@ def register():
         name='Armature',
         description='Main armature',
     )
-    bpy.types.Scene.HeadBone = bpy.props.StringProperty(
-        name='Head Bone'
-    )
-    bpy.types.Scene.LeftEyeMat = bpy.props.StringProperty(
-        name='Left Eye Material'
-    )
-    bpy.types.Scene.RightEyeMat = bpy.props.StringProperty(
-        name='Right Eye Material'
-    )
+    bpy.types.Scene.HeadBone = bpy.props.StringProperty(name='Head Bone')
+    bpy.types.Scene.LeftEyeMat = bpy.props.StringProperty(name='Left Eye Material')
+    bpy.types.Scene.RightEyeMat = bpy.props.StringProperty(name='Right Eye Material')
     bpy.types.Scene.NameFormat = bpy.props.EnumProperty(name="Name format", items=name_formats)
     bpy.types.Scene.BoneChains = bpy.props.EnumProperty(name="Bone chain", items=bone_chains)
     bpy.types.Scene.EyesUp = bpy.props.FloatProperty(name="Up eyes max", min=0, max=360)
@@ -92,21 +106,8 @@ def register():
     bpy.types.Scene.EyesRight = bpy.props.FloatProperty(name="Right eyes max", min=0, max=360)
     bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
     bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
+    register_()
 
-    bpy.utils.register_class(rename_bones.RenameButtonBip)
-    bpy.utils.register_class(rename_bones.RenameButtonValveBiped)
-    bpy.utils.register_class(rename_bones.RenamePanel)
-    bpy.utils.register_class(rename_bones.RenameChainButton)
-    bpy.utils.register_class(rename_bones.ConnectBones)
-    bpy.utils.register_class(ValvePanel.ValvePanel)
-    bpy.utils.register_class(ValvePanel.CreateEyeDummys)
-    bpy.utils.register_class(ValvePanel.QCEyesPopup)
-    bpy.utils.register_class(ValvePanel.CleanBones)
-    bpy.utils.register_class(ValvePanel.CleanBonesConstraints)
-    bpy.utils.register_class(ValvePanel.RenameBoneChains)
-    bpy.utils.register_class(ValvePanel.RenameChainPopup)
-    bpy.utils.register_class(ValvePanel.QCEyesQCGenerator)
-    bpy.utils.register_class(AlphaSplit)
     bpy.types.IMAGE_MT_image.append(split_alpha_menu)
 
 
@@ -125,21 +126,7 @@ def unregister():
     del bpy.types.Scene.EyesRight
     del bpy.types.Scene.EyesLeft
     del bpy.types.Scene.AngDev
-    bpy.utils.unregister_class(rename_bones.RenameButtonBip)
-    bpy.utils.unregister_class(rename_bones.RenameButtonValveBiped)
-    bpy.utils.unregister_class(rename_bones.RenamePanel)
-    bpy.utils.unregister_class(rename_bones.RenameChainButton)
-    bpy.utils.unregister_class(rename_bones.ConnectBones)
-    bpy.utils.unregister_class(ValvePanel.ValvePanel)
-    bpy.utils.unregister_class(ValvePanel.CreateEyeDummys)
-    bpy.utils.unregister_class(ValvePanel.QCEyesPopup)
-    bpy.utils.unregister_class(ValvePanel.CleanBones)
-    bpy.utils.unregister_class(ValvePanel.CleanBonesConstraints)
-    bpy.utils.unregister_class(ValvePanel.RenameBoneChains)
-    bpy.utils.unregister_class(ValvePanel.RenameChainPopup)
-    bpy.utils.unregister_class(ValvePanel.QCEyesQCGenerator)
-    bpy.utils.unregister_class(AlphaSplit)
-    bpy.types.IMAGE_MT_image.remove(split_alpha_menu)
+    unregister_()
 
 
 if __name__ == "__main__":

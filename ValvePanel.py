@@ -5,6 +5,7 @@ from bpy.props import *
 from .bone_table import bone_table_valvebiped, bone_table_bip
 
 
+# noinspection PyPep8Naming
 class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
     bl_idname = 'valve.panel'
     bl_label = 'Source engine tools'
@@ -15,11 +16,11 @@ class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
         scn = context.scene
         layout = self.layout
         row = layout.row()
-        row.label(text = "Target armature")
+        row.label(text="Target armature")
         row.prop_search(scn, "Armature", scn, "objects", text='')
 
         layout.separator()
-        layout.label(text = "QC eyes")
+        layout.label(text="QC eyes")
         box = layout.box()
         column = box.column(align=True)
         column.operator("qceyes.popup")
@@ -45,8 +46,8 @@ class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
             row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
 
         layout.separator()
-        layout.label(text = "Armature tools")
-        layout.label(text = "Work with active armature")
+        layout.label(text="Armature tools")
+        layout.label(text="Work with active armature")
         box = layout.box()
         box.operator("valve.cleanbones")
         box.operator("valve.cleanbonesconstraints")
@@ -59,15 +60,16 @@ class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
         box.operator('armature.merge')
 
         layout.separator()
-        layout.label(text = "Rename tools")
+        layout.label(text="Rename tools")
         box = layout.box()
         box.operator("valve.renamechainpopup")
         box.separator()
-        box.label(text = 'Choose name format')
+        box.label(text='Choose name format')
         box.prop(scn, 'NameFormat')
         box.separator()
         box.prop(scn, 'BoneChains')
         box.operator('valve.renamechain')
+        box.operator('valve.compare_armatures')
 
 
 def track_l_eye(_):
@@ -80,6 +82,7 @@ def track_r_eye(_):
     bpy.context.scene.RightEye = obj.location
 
 
+# noinspection PyPep8Naming,PyMethodMayBeStatic
 class EYE_OT_CreateEyeDummys(bpy.types.Operator):
     bl_idname = "create.eyedummy"
     bl_label = "Create eye dummies"
@@ -108,6 +111,7 @@ eyeball_string = 'eyeball {eyeball_side} "{p_bone}" {x} {y} {z} "{mat_name}" 3 {
 flexcont_string = 'flexcontroller eyes range -{angle1} {angle2} {fc_type}\n'
 
 
+# noinspection PyPep8Naming
 class BONES_OT_CleanBones(bpy.types.Operator):
     bl_idname = "valve.cleanbones"
     bl_label = "Remove custom shapes"
@@ -125,6 +129,7 @@ class BONES_OT_CleanBones(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# noinspection PyPep8Naming
 class BONES_OT_CleanBonesConstraints(bpy.types.Operator):
     bl_idname = "valve.cleanbonesconstraints"
     bl_label = "Remove constraints"
@@ -143,6 +148,7 @@ class BONES_OT_CleanBonesConstraints(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# noinspection PyPep8Naming
 class BONES_OT_QCEyesQCGenerator(bpy.types.Operator):
     bl_idname = "qceyes.generate_qc"
     bl_label = "Generate QC string"
@@ -203,6 +209,7 @@ def avg(*args):
     return sum(args) / len(args)
 
 
+# noinspection PyPep8Naming
 class EYES_TP_QCEyesPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "qceyes.popup"
@@ -210,7 +217,7 @@ class EYES_TP_QCEyesPopup(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-        width = 400 * bpy.context.user_preferences.system.pixel_size
+        width = 400 * bpy.context.preferences.system.pixel_size
         status = context.window_manager.invoke_props_dialog(self,
                                                             width=width)
         return status
@@ -255,6 +262,8 @@ def find_line_of_sight(start, end):
     bone = end
     chain.append(end)
     for _ in range(3):
+        if bone == None:
+            return find_line_of_sight(end, start)
         bone = bone.parent
         chain.append(bone)
         if bone == start:
@@ -264,6 +273,7 @@ def find_line_of_sight(start, end):
     return chain
 
 
+# noinspection PyPep8Naming
 class BONES_OT_RenameBoneChains(bpy.types.Operator):
     bl_idname = "valve.renamechain"
     bl_label = "Rename chain"
@@ -277,17 +287,20 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
         if ob.type == "ARMATURE":
             name_dict = bone_table_valvebiped if context.scene.NameFormat == 1 else bone_table_bip
             bone_chain = get_bonechain(context.scene.BoneChains)
-            bones = context.selected_bones if context.selected_bones else context.selected_pose_bones
+            bones = context.selected_pose_bones
             current_chain = context.scene.BoneChains
             if not bones:
                 self.report({"ERROR"}, "Did you read \"How to use?\"? I think No.")
                 return {'FINISHED'}
+            print(bones)
+            print(bones[0], bones[1])
             bones = find_line_of_sight(bones[0], bones[1])
+            print('CHAIN', bones)
             bone_names = bone_chain
             if current_chain in ['LARM', 'RARM', 'LLEG', 'RLEG']:
                 if len(bones) == 3:
                     bone_names = bone_names[:-1]
-            if len(bones)==2:
+            if len(bones) == 2:
                 bone_names = bone_names
                 for n, bone in enumerate(bones[::-1]):
                     bone.name = name_dict[bone_names[n]]
@@ -302,6 +315,7 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# noinspection PyPep8Naming,PyMethodMayBeStatic
 class BONES_TP_RenameChainPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "valve.renamechainpopup"
@@ -309,7 +323,7 @@ class BONES_TP_RenameChainPopup(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-        width = 400 * bpy.context.user_preferences.system.pixel_size
+        width = 400 * bpy.context.preferences.system.pixel_size
         status = context.window_manager.invoke_props_dialog(self,
                                                             width=width)
         return status
@@ -325,4 +339,51 @@ class BONES_TP_RenameChainPopup(bpy.types.Operator):
         col.label("After all this click \"Rename limb\"")
 
     def execute(self, context):
+        return {'FINISHED'}
+
+
+
+# noinspection PyPep8Naming
+class BONES_TP_CompareArmatures(bpy.types.Operator):
+    """Compared 2 armatures"""
+    bl_idname = "valve.compare_armatures"
+    bl_label = "Compare 2 armatures"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def compare(self, armatures):
+        missing = []
+        parent_diff = []
+        arm1 = armatures[0]
+        arm2 = armatures[1]
+        bones1 = arm1.data.bones
+        bones2 = arm2.data.bones
+
+        for bone1 in bones1:
+            bone2 = bones2.get(bone1.name, None)
+            if bone2 is None:
+                missing.append(bone1.name)
+                continue
+            if bone1.parent is not None and bone2.parent is not None:
+                if bone1.parent.name != bone2.parent.name:
+                    parent_diff.append(bone1.name)
+        return missing, parent_diff
+
+    def execute(self, context):
+        from ctypes import windll
+        k32 = windll.LoadLibrary('kernel32.dll')
+        setConsoleModeProc = k32.SetConsoleMode
+        setConsoleModeProc(k32.GetStdHandle(-11), 0x0001 | 0x0002 | 0x0004)
+        armatures = bpy.context.selected_objects
+        missing, parent_diff = self.compare(armatures)
+        print('\033[94mMissing bones on {}\033[0m'.format(armatures[0].name))
+        for mis in missing:
+            print('\033[91m{}\033[0m'.format(mis))
+        missing, parent_diff = self.compare(armatures[::-1])
+        print('\033[94mMissing bones on {}\033[0m'.format(armatures[1].name))
+        for mis in missing:
+            print('\033[91m{}\033[0m'.format(mis))
+        print('\033[94mDifferent parents {}\033[0m'.format(armatures[1].name))
+        for mis in parent_diff:
+            print('\033[91m{}\033[0m'.format(mis))
+
         return {'FINISHED'}

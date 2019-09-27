@@ -12,9 +12,6 @@ bl_info = {
     "version": (0, 3),
     "blender": (2, 80, 0),
     "description": "Tools for preparing armature for Source Engine export",
-    # 'warning': 'May crash blender',
-    # "wiki_url": "http://www.barneyparker.com/blender-json-import-export-plugin",
-    # "tracker_url": "http://www.barneyparker.com/blender-json-import-export-plugin",
     "category": "Tools"
 }
 import importlib
@@ -75,7 +72,6 @@ classes = [
     rename_bones.BONE_OT_RenameChainButton,
     rename_bones.BONE_OT_ConnectBones,
     rename_bones.BONE_OT_MergeBones,
-    ValvePanel.SOURCEENG_TP_ValvePanel,
     ValvePanel.EYE_OT_CreateEyeDummys,
     ValvePanel.EYES_TP_QCEyesPopup,
     ValvePanel.BONES_OT_CleanBones,
@@ -83,15 +79,18 @@ classes = [
     ValvePanel.BONES_OT_RenameBoneChains,
     ValvePanel.BONES_TP_RenameChainPopup,
     ValvePanel.BONES_OT_QCEyesQCGenerator,
+    ValvePanel.BONES_TP_CompareArmatures,
+    ValvePanel.SOURCEENG_TP_ValvePanel,
+
     IMAGE_MT_AlphaSplit
 ]
 register_, unregister_ = bpy.utils.register_classes_factory(classes)
 
 
 def register():
-    bpy.types.Scene.NameTemplate = StringProperty(name="Bone template", default='bip_bone_{1}')
-    bpy.types.Scene.LeftEye = FloatVectorProperty(name="Left eye")
-    bpy.types.Scene.RightEye = FloatVectorProperty(name="Right eye")
+    bpy.types.Scene.NameTemplate = bpy.props.StringProperty(name="Bone template", default='bip_bone_{1}')
+    bpy.types.Scene.LeftEye = bpy.props.FloatVectorProperty(name="Left eye")
+    bpy.types.Scene.RightEye = bpy.props.FloatVectorProperty(name="Right eye")
     bpy.types.Scene.Armature = bpy.props.StringProperty(
         name='Armature',
         description='Main armature',

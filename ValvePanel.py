@@ -273,6 +273,27 @@ def find_line_of_sight(start, end):
     return chain
 
 
+def close(a, b):
+    return abs(a - b) < 0.1
+
+
+def find_mirror_bone(ob, bone):
+    for o_bone in ob.bones:
+        if bone != o_bone and \
+                close(o_bone.head.x, (-1 * bone.head.x)) and \
+                close(o_bone.head.y, bone.head.y) and \
+                close(o_bone.head.z, bone.head.z):
+            return o_bone
+    pass
+
+
+def mirror_name(name):
+    if name[-1].upper() == 'L':
+        return name[:-1] + 'R'
+    if name[-1].upper() == 'R':
+        return name[:-1] + 'L'
+
+
 # noinspection PyPep8Naming
 class BONES_OT_RenameBoneChains(bpy.types.Operator):
     bl_idname = "valve.renamechain"
@@ -292,8 +313,6 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
             if not bones:
                 self.report({"ERROR"}, "Did you read \"How to use?\"? I think No.")
                 return {'FINISHED'}
-            print(bones)
-            print(bones[0], bones[1])
             bones = find_line_of_sight(bones[0], bones[1])
             print('CHAIN', bones)
             bone_names = bone_chain
@@ -303,10 +322,14 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
             if len(bones) == 2:
                 bone_names = bone_names
                 for n, bone in enumerate(bones[::-1]):
+                    if find_mirror_bone(ob, bone):
+                        find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
                     bone.name = name_dict[bone_names[n]]
             else:
                 bone_names = bone_names[::-1]
                 for n, bone in enumerate(bones):
+                    if find_mirror_bone(ob, bone):
+                        find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
                     bone.name = name_dict[bone_names[n]]
             # start_bone = context.selected
         else:
@@ -340,7 +363,6 @@ class BONES_TP_RenameChainPopup(bpy.types.Operator):
 
     def execute(self, context):
         return {'FINISHED'}
-
 
 
 # noinspection PyPep8Naming

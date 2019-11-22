@@ -161,11 +161,11 @@ class BONE_OT_MergeBones(bpy.types.Operator):
         this = context.active_pose_bone
         others = context.selected_pose_bones[1:]
         arm = this.id_data
-        for child in arm.children:
-            for other in others:
+        for other in others:
+            for child in arm.children:
                 # print(child)
                 if child.type == 'MESH':
-                    modifier = child.modifiers.new(type='VERTEX_WEIGHT_MIX', name='MERGE_TO_{}'.format(this.name))
+                    modifier = child.modifiers.new(type='VERTEX_WEIGHT_MIX', name='MERGE_{}_TO_{}'.format(other.name,this.name))
                     # print(modifier, this, other)
                     # print(child, child.type, modifier, this, other)
                     modifier.vertex_group_a = this.name

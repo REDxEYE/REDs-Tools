@@ -1,7 +1,7 @@
 try:
-    from .MultiDict import MultiDict
+    from .multi_dict import MultiDict
 except ImportError:
-    from MultiDict import MultiDict
+    from multi_dict import MultiDict
 
 bone_table_valvebiped = MultiDict({
     ('mixamorig:Hips', 'pelvis',): "ValveBiped.Bip01_Pelvis",

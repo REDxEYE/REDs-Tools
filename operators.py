@@ -1,75 +1,9 @@
+
 import bpy
 
 from bpy.props import *
 
 from .bone_table import bone_table_valvebiped, bone_table_bip
-
-
-# noinspection PyPep8Naming
-class SOURCEENG_TP_ValvePanel(bpy.types.Panel):
-    bl_idname = 'valve.panel'
-    bl_label = 'Source engine tools'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-        row = layout.row()
-        row.label(text="Target armature")
-        row.prop_search(scn, "Armature", scn, "objects", text='')
-
-        layout.separator()
-        layout.label(text="QC eyes")
-        box = layout.box()
-        column = box.column(align=True)
-        column.operator("qceyes.popup")
-        column.separator()
-        column.operator("create.eyedummy")
-        column.operator("qceyes.generate_qc")
-        column.separator()
-        column = box.column()
-        column.prop(scn, 'LeftEye')
-        column.prop(scn, 'RightEye')
-        column.prop_search(scn, 'LeftEyeMat', bpy.data, 'materials')
-        column.prop_search(scn, 'RightEyeMat', bpy.data, 'materials')
-        row = column.row()
-        row.prop(scn, 'EyesUp')
-        row.prop(scn, 'EyesDown')
-        row = column.row()
-        row.prop(scn, 'EyesLeft')
-        row.prop(scn, 'EyesRight')
-        column.prop(scn, 'AngDev')
-        if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
-            row = column.row()
-            row.label("Head Bone")
-            row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
-
-        layout.separator()
-        layout.label(text="Armature tools")
-        layout.label(text="Work with active armature")
-        box = layout.box()
-        box.operator("valve.cleanbones")
-        box.operator("valve.cleanbonesconstraints")
-        box.operator("rename.biped")
-        box.operator("rename.bip")
-        column = box.column()
-        column.prop(scn, 'NameTemplate')
-        column.operator('rename.chain')
-        box.operator('armature.connect')
-        box.operator('armature.merge')
-
-        layout.separator()
-        layout.label(text="Rename tools")
-        box = layout.box()
-        box.operator("valve.renamechainpopup")
-        box.separator()
-        box.label(text='Choose name format')
-        box.prop(scn, 'NameFormat')
-        box.separator()
-        box.prop(scn, 'BoneChains')
-        box.operator('valve.renamechain')
-        box.operator('valve.compare_armatures')
 
 
 def track_l_eye(_):
@@ -83,7 +17,7 @@ def track_r_eye(_):
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class EYE_OT_CreateEyeDummys(bpy.types.Operator):
+class EYES_OT_CreateEyeDummies(bpy.types.Operator):
     bl_idname = "create.eyedummy"
     bl_label = "Create eye dummies"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -94,14 +28,14 @@ class EYE_OT_CreateEyeDummys(bpy.types.Operator):
         except:
             pass
         if not bpy.data.objects.get('VALVE_EYEDUMMY_L', None) or not bpy.data.objects.get('VALVE_EYEDUMMY_R', None):
-            bpy.ops.mesh.primitive_uv_sphere_add(size=0.5)
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5)
             eye_L = context.active_object
             eye_L.name = 'VALVE_EYEDUMMY_L'
-            bpy.ops.mesh.primitive_uv_sphere_add(size=0.5)
+            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5)
             eye_R = context.active_object
             eye_R.name = 'VALVE_EYEDUMMY_R'
-            bpy.app.handlers.scene_update_post.append(track_l_eye)
-            bpy.app.handlers.scene_update_post.append(track_r_eye)
+            bpy.app.handlers.depsgraph_update_post.append(track_l_eye)
+            bpy.app.handlers.depsgraph_update_post.append(track_r_eye)
             bpy.ops.qceyes.popup('EXEC_DEFAULT')
         return {'FINISHED'}
 
@@ -287,7 +221,10 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
         if ob.type == "ARMATURE":
             name_dict = bone_table_valvebiped if context.scene.NameFormat == 1 else bone_table_bip
             bone_chain = get_bonechain(context.scene.BoneChains)
+            end = context.active_pose_bone
             bones = context.selected_pose_bones
+            bones.remove(end)
+            bones.append(end)
             current_chain = context.scene.BoneChains
             if not bones:
                 self.report({"ERROR"}, "Did you read \"How to use?\"? I think No.")
@@ -306,7 +243,9 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
                     bone.name = name_dict[bone_names[n]]
             else:
                 bone_names = bone_names[::-1]
+                print(bone_names)
                 for n, bone in enumerate(bones):
+                    print(n,bone_names[n],bone.name)
                     bone.name = name_dict[bone_names[n]]
             # start_bone = context.selected
         else:
@@ -340,7 +279,6 @@ class BONES_TP_RenameChainPopup(bpy.types.Operator):
 
     def execute(self, context):
         return {'FINISHED'}
-
 
 
 # noinspection PyPep8Naming

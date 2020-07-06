@@ -91,7 +91,8 @@ classes = [
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_TrasnferShapes,
 
-    mesh_operators.TrasferShapes,
+    mesh_operators.TransferShapes,
+    mesh_operators.BakeShapeKey,
 
     IMAGE_MT_AlphaSplit
 ]

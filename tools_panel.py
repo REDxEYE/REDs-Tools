@@ -16,7 +16,6 @@ class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
     bl_label = 'Source engine tools'
 
     def draw(self, context):
-        pass
         scn = context.scene
         layout = self.layout
         row = layout.row()
@@ -136,5 +135,6 @@ class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
         layout.use_property_decorate = False
 
         layout.operator('red_utils.transfer_shapes')
+        layout.operator('red_utils.bake_shape')
 
 

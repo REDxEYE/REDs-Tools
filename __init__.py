@@ -76,12 +76,12 @@ classes = [
     rename_bones.BONE_OT_MergeBones,
 
     operators.EYES_OT_CreateEyeDummies,
-    operators.EYES_TP_QCEyesPopup,
+    operators.EYES_OT_QCEyesPopup,
 
     operators.BONES_OT_CleanBones,
     operators.BONES_OT_CleanBonesConstraints,
     operators.BONES_OT_RenameBoneChains,
-    operators.BONES_TP_RenameChainPopup,
+    operators.BONES_OT_RenameChainPopup,
     operators.BONES_OT_QCEyesQCGenerator,
     operators.BONES_TP_CompareArmatures,
 
@@ -91,8 +91,8 @@ classes = [
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_TrasnferShapes,
 
-    mesh_operators.TransferShapes,
-    mesh_operators.BakeShapeKey,
+    mesh_operators.SHAPE_KEYS_OT_TransferShapes,
+    mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
 
     IMAGE_MT_AlphaSplit
 ]

@@ -5,7 +5,7 @@ import numpy as np
 
 
 # noinspection PyPep8Naming
-class TransferShapes(bpy.types.Operator):
+class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
     bl_idname = "red_utils.transfer_shapes"
     bl_label = "Transfer shapes"
     bl_options = {'REGISTER', 'UNDO'}
@@ -39,7 +39,7 @@ class TransferShapes(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class BakeShapeKey(bpy.types.Operator):
+class SHAPE_KEYS_OT_BakeShapeKey(bpy.types.Operator):
     bl_idname = "red_utils.bake_shape"
     bl_label = "Bake shape key min/max values"
     bl_options = {'REGISTER', 'UNDO'}
@@ -58,12 +58,12 @@ class BakeShapeKey(bpy.types.Operator):
         src_shape_vertices = np.zeros((len(target.data.vertices) * 3,), dtype=np.float32)
         shape_key.data.foreach_get('co', src_shape_vertices)
 
-        if val_max != 1.0:
-            shape = target.shape_key_add(name=shape_key.name + f"_max({val_max})")
-            delta = src_shape_vertices - dst_vertices
-            shape.data.foreach_set("co", dst_vertices + (delta * val_max))
+        shape = target.shape_key_add(name=shape_key.name + f"_max({val_max})")
+        delta = src_shape_vertices - dst_vertices
+        shape.data.foreach_set("co", dst_vertices + (delta * val_max))
 
-        if val_min != 0.0:
-            shape = target.shape_key_add(name=shape_key.name + f"_max({val_min})")
-            delta = src_shape_vertices - dst_vertices
-            shape.data.foreach_set("co", dst_vertices + (delta * val_min))
+        shape = target.shape_key_add(name=shape_key.name + f"_min({val_min})")
+        delta = src_shape_vertices - dst_vertices
+        shape.data.foreach_set("co", dst_vertices + (delta * val_min))
+
+        return {'FINISHED'}

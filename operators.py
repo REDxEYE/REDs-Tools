@@ -1,4 +1,3 @@
-
 import bpy
 
 from bpy.props import *
@@ -27,7 +26,10 @@ class EYES_OT_CreateEyeDummies(bpy.types.Operator):
             bpy.ops.object.mode_set(mode='OBJECT')
         except:
             pass
-        if not bpy.data.objects.get('VALVE_EYEDUMMY_L', None) or not bpy.data.objects.get('VALVE_EYEDUMMY_R', None):
+        if not (
+            bpy.data.objects.get('VALVE_EYEDUMMY_L', None)
+            and bpy.data.objects.get('VALVE_EYEDUMMY_R', None)
+        ):
             bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5)
             eye_L = context.active_object
             eye_L.name = 'VALVE_EYEDUMMY_L'
@@ -144,7 +146,7 @@ def avg(*args):
 
 
 # noinspection PyPep8Naming
-class EYES_TP_QCEyesPopup(bpy.types.Operator):
+class EYES_OT_QCEyesPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "qceyes.popup"
     bl_label = "QC eyes how to use!"
@@ -152,9 +154,7 @@ class EYES_TP_QCEyesPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         width = 400 * bpy.context.preferences.system.pixel_size
-        status = context.window_manager.invoke_props_dialog(self,
-                                                            width=width)
-        return status
+        return context.window_manager.invoke_props_dialog(self, width=width)
 
     def draw(self, context):
         layout = self.layout
@@ -196,7 +196,7 @@ def find_line_of_sight(start, end):
     bone = end
     chain.append(end)
     for _ in range(3):
-        if bone == None:
+        if bone is None:
             return find_line_of_sight(end, start)
         bone = bone.parent
         chain.append(bone)
@@ -218,7 +218,6 @@ def find_mirror_bone(ob, bone):
                 close(o_bone.head.y, bone.head.y) and \
                 close(o_bone.head.z, bone.head.z):
             return o_bone
-    pass
 
 
 def mirror_name(name):
@@ -253,9 +252,8 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
             bones = find_line_of_sight(bones[0], bones[1])
             print('CHAIN', bones)
             bone_names = bone_chain
-            if current_chain in ['LARM', 'RARM', 'LLEG', 'RLEG']:
-                if len(bones) == 3:
-                    bone_names = bone_names[:-1]
+            if current_chain in ['LARM', 'RARM', 'LLEG', 'RLEG'] and len(bones) == 3:
+                bone_names = bone_names[:-1]
             if len(bones) == 2:
                 bone_names = bone_names
                 for n, bone in enumerate(bones[::-1]):
@@ -268,7 +266,7 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
                     if find_mirror_bone(ob, bone):
                         find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
                     bone.name = name_dict[bone_names[n]]
-            # start_bone = context.selected
+                # start_bone = context.selected
         else:
             self.report({"ERROR"},
                         "What is this? {} is not armature! I need armature!".format(ob.type.lower().title()))
@@ -276,7 +274,7 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class BONES_TP_RenameChainPopup(bpy.types.Operator):
+class BONES_OT_RenameChainPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "valve.renamechainpopup"
     bl_label = "How to use rename limb !"
@@ -284,9 +282,7 @@ class BONES_TP_RenameChainPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         width = 400 * bpy.context.preferences.system.pixel_size
-        status = context.window_manager.invoke_props_dialog(self,
-                                                            width=width)
-        return status
+        return context.window_manager.invoke_props_dialog(self, width=width)
 
     def draw(self, context):
         layout = self.layout

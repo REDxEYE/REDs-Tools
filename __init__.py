@@ -2,9 +2,11 @@ import bpy
 
 from bpy.props import *
 
-from . import TextureTools
-from . import ValvePanel
+from . import texture_tools
+from . import tools_panel
 from . import rename_bones
+from . import operators
+from . import mesh_operators
 
 bl_info = {
     "name": "RED's Tools",
@@ -17,7 +19,7 @@ bl_info = {
 import importlib
 
 importlib.reload(rename_bones)
-importlib.reload(ValvePanel)
+importlib.reload(tools_panel)
 
 name_formats = [
     ("BIP", "Bip", "", 0),
@@ -51,7 +53,7 @@ class IMAGE_MT_AlphaSplit(bpy.types.Operator):
     def execute(self, context):
         sima = context.space_data
         ima = sima.image
-        TextureTools.split_alpha(ima)
+        texture_tools.split_alpha(ima)
         return {'FINISHED'}
 
 
@@ -72,15 +74,24 @@ classes = [
     rename_bones.BONE_OT_RenameChainButton,
     rename_bones.BONE_OT_ConnectBones,
     rename_bones.BONE_OT_MergeBones,
-    ValvePanel.EYE_OT_CreateEyeDummys,
-    ValvePanel.EYES_TP_QCEyesPopup,
-    ValvePanel.BONES_OT_CleanBones,
-    ValvePanel.BONES_OT_CleanBonesConstraints,
-    ValvePanel.BONES_OT_RenameBoneChains,
-    ValvePanel.BONES_TP_RenameChainPopup,
-    ValvePanel.BONES_OT_QCEyesQCGenerator,
-    ValvePanel.BONES_TP_CompareArmatures,
-    ValvePanel.SOURCEENG_TP_ValvePanel,
+
+    operators.EYES_OT_CreateEyeDummies,
+    operators.EYES_TP_QCEyesPopup,
+
+    operators.BONES_OT_CleanBones,
+    operators.BONES_OT_CleanBonesConstraints,
+    operators.BONES_OT_RenameBoneChains,
+    operators.BONES_TP_RenameChainPopup,
+    operators.BONES_OT_QCEyesQCGenerator,
+    operators.BONES_TP_CompareArmatures,
+
+    tools_panel.VIEW3D_PT_ToolsPanel,
+    tools_panel.VIEW3D_PT_QcEyes,
+    tools_panel.VIEW3D_PT_ArmatureTools,
+    tools_panel.VIEW3D_PT_RenameTools,
+    tools_panel.VIEW3D_PT_TrasnferShapes,
+
+    mesh_operators.TrasferShapes,
 
     IMAGE_MT_AlphaSplit
 ]
@@ -88,7 +99,7 @@ register_, unregister_ = bpy.utils.register_classes_factory(classes)
 
 
 def register():
-    bpy.types.Scene.NameTemplate = bpy.props.StringProperty(name="Bone template", default='bip_bone_{1}')
+    bpy.types.Scene.NameTemplate = bpy.props.StringProperty(name="", default='bip_bone_{1}')
     bpy.types.Scene.LeftEye = bpy.props.FloatVectorProperty(name="Left eye")
     bpy.types.Scene.RightEye = bpy.props.FloatVectorProperty(name="Right eye")
     bpy.types.Scene.Armature = bpy.props.StringProperty(
@@ -105,6 +116,7 @@ def register():
     bpy.types.Scene.EyesRight = bpy.props.FloatProperty(name="Right eyes max", min=0, max=360)
     bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
     bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
+
     register_()
 
     bpy.types.IMAGE_MT_image.append(split_alpha_menu)

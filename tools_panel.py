@@ -135,6 +135,7 @@ class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
         layout.use_property_decorate = False
 
         layout.operator('red_utils.transfer_shapes')
+        layout.operator('red_utils.bake_shape_ranges')
         layout.operator('red_utils.bake_shape')
 
 

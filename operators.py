@@ -212,7 +212,7 @@ def close(a, b):
 
 
 def find_mirror_bone(ob, bone):
-    for o_bone in ob.bones:
+    for o_bone in ob.pose.bones:
         if bone != o_bone and \
                 close(o_bone.head.x, (-1 * bone.head.x)) and \
                 close(o_bone.head.y, bone.head.y) and \
@@ -247,7 +247,7 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
             bones.append(end)
             current_chain = context.scene.BoneChains
             if not bones:
-                self.report({"ERROR"}, "Did you read \"How to use?\"? I think No.")
+                self.report({"ERROR"}, "Have you read \"How to use?\"? I think No.")
                 return {'FINISHED'}
             bones = find_line_of_sight(bones[0], bones[1])
             print('CHAIN', bones)
@@ -257,14 +257,14 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
             if len(bones) == 2:
                 bone_names = bone_names
                 for n, bone in enumerate(bones[::-1]):
-                    if find_mirror_bone(ob, bone):
-                        find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
+                    # if find_mirror_bone(ob, bone):
+                    #     find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
                     bone.name = name_dict[bone_names[n]]
             else:
                 bone_names = bone_names[::-1]
                 for n, bone in enumerate(bones):
-                    if find_mirror_bone(ob, bone):
-                        find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
+                    # if find_mirror_bone(ob, bone):
+                    #     find_mirror_bone(ob, bone).name = mirror_name(name_dict[bone_names[n]])
                     bone.name = name_dict[bone_names[n]]
                 # start_bone = context.selected
         else:

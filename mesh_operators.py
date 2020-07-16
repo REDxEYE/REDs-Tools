@@ -75,8 +75,7 @@ class SHAPE_KEY_OT_BakeShapeKeyModifiers(bpy.types.Operator):
 
     def get_evaluated_object(self, ob):
         depth = bpy.context.evaluated_depsgraph_get()
-        eobj = ob.evaluated_get(depth)
-        return eobj
+        return ob.evaluated_get(depth)
 
     def execute(self, context):
         source = context.active_object
@@ -84,25 +83,31 @@ class SHAPE_KEY_OT_BakeShapeKeyModifiers(bpy.types.Operator):
         for shape in source.data.shape_keys.key_blocks.values():
             shape.value = 0
 
-        eobj = self.get_evaluated_object(source)
+        dg = bpy.context.evaluated_depsgraph_get()
 
-        mesh = bpy.data.meshes.new_from_object(eobj)
+        mesh = bpy.data.meshes.new_from_object(source.evaluated_get(dg), preserve_all_data_layers=True, depsgraph=dg)
         name = source.name + "_baked"
         target = bpy.data.objects.new(name, mesh)
-        target.data = mesh
-        target.shape_key_add(name='base')
+        target.shape_key_add(name='Basis')
         bpy.context.collection.objects.link(target)
 
-        for key_name, key_data in source.data.shape_keys.key_blocks.items():
+        for group_name, _ in source.vertex_groups.items():
+            weight_group = target.vertex_groups.get(group_name,
+                                                    None) or target.vertex_groups.new(
+                name=group_name)
+
+        for key_name, key_data in source.data.shape_keys.key_blocks.items()[1:]:
             for shape in source.data.shape_keys.key_blocks.values():
                 shape.value = 0
 
             key_data.value = 1
 
             key_source = self.get_evaluated_object(source)
+            key_source_mesh = bpy.data.meshes.new_from_object(key_source, preserve_all_data_layers=True, depsgraph=dg)
+            src_vertices = np.zeros((len(key_source_mesh.vertices) * 3,), dtype=np.float32)
+            key_source_mesh.vertices.foreach_get('co', src_vertices)
 
-            src_vertices = np.zeros((len(key_source.data.vertices) * 3,), dtype=np.float32)
-            key_source.data.vertices.foreach_get('co', src_vertices)
+            bpy.data.meshes.remove(key_source_mesh)
 
             shape_target = target.data.shape_keys.key_blocks.get(key_name, None) or target.shape_key_add(name=key_name)
             if target.data.shape_keys.key_blocks == 0:

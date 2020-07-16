@@ -93,6 +93,7 @@ classes = [
 
     mesh_operators.SHAPE_KEYS_OT_TransferShapes,
     mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
+    mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
 
     IMAGE_MT_AlphaSplit
 ]

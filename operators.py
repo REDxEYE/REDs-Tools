@@ -277,7 +277,7 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
 class BONES_OT_RenameChainPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "valve.renamechainpopup"
-    bl_label = "How to use rename limb !"
+    bl_label = "How to use!"
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):

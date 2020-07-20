@@ -11,7 +11,7 @@ from . import mesh_operators
 bl_info = {
     "name": "RED's Tools",
     "author": "RED_EYE",
-    "version": (0, 3),
+    "version": (1, 0),
     "blender": (2, 80, 0),
     "description": "Tools for preparing armature for Source Engine export",
     "category": "Tools"

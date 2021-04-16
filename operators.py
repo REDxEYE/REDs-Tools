@@ -161,10 +161,10 @@ class EYES_OT_QCEyesPopup(bpy.types.Operator):
         box = layout.box()
         box.label(text="How to use!")
         col = box.column(align=True)
-        col.label("Place both dummies where eyes supposed to be")
+        col.label(text="Place both dummies where eyes supposed to be")
         col.separator()
-        col.label("Apply eyes materials to them")
-        col.label("After all this trash click \"Generate QC\"")
+        col.label(text="Apply eyes materials to them")
+        col.label(text="After all this trash click \"Generate QC\"")
 
     def execute(self, context):
         return {'FINISHED'}
@@ -289,10 +289,10 @@ class BONES_OT_RenameChainPopup(bpy.types.Operator):
         box = layout.box()
         box.label(text="How to use!")
         col = box.column(align=True)
-        col.label("Select start bone, ex:collar bone or upperarm bone")
+        col.label(text="Select start bone, ex:collar bone or upperarm bone")
         col.separator()
-        col.label("Then select end bone, ex:foot bone or toe bone")
-        col.label("After all this click \"Rename limb\"")
+        col.label(text="Then select end bone, ex:foot bone or toe bone")
+        col.label(text="After all this click \"Rename limb\"")
 
     def execute(self, context):
         return {'FINISHED'}

@@ -116,3 +116,25 @@ class SHAPE_KEY_OT_BakeShapeKeyModifiers(bpy.types.Operator):
             shape_target.data.foreach_set("co", src_vertices)
 
         return {'FINISHED'}
+
+
+class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
+    bl_idname = "red_utils.create_stereo_split"
+    bl_label = "Create stereo split"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        source = context.active_object
+
+        src_vertices = np.zeros((len(source.data.vertices) * 3,), dtype=np.float32)
+        source.data.vertices.foreach_get('co', src_vertices)
+        src_vertices = src_vertices.reshape((-1, 3))
+        dimm = src_vertices.max() - src_vertices.min()
+        balance_width = dimm * (1 - (99.3 / 100))
+        balance = src_vertices[:, 0]
+        balance = np.clip((-balance / balance_width / 2) + 0.5, 0, 1)
+
+        weight_group = source.vertex_groups.new(name='__BALANCE')
+        for n, v in enumerate(balance):
+            weight_group.add([n], v, 'REPLACE')
+        return {'FINISHED'}

@@ -94,6 +94,7 @@ classes = [
     mesh_operators.SHAPE_KEYS_OT_TransferShapes,
     mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
     mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
+    mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
 
     IMAGE_MT_AlphaSplit
 ]

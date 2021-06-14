@@ -137,5 +137,6 @@ class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
         layout.operator('red_utils.transfer_shapes')
         layout.operator('red_utils.bake_shape_ranges')
         layout.operator('red_utils.bake_shape')
+        layout.operator('red_utils.create_stereo_split')
 
 

@@ -137,7 +137,10 @@ class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
         balance = src_vertices[:, axis_id]
         balance = np.clip((-balance / balance_width / 2) + 0.5, 0, 1)
 
-        weight_group = source.vertex_groups.new(name='__BALANCE')
+        weight_group = source.vertex_groups.get('__BALANCE_L',None) or source.vertex_groups.new(name='__BALANCE_L')
         for n, v in enumerate(balance):
             weight_group.add([n], v, 'REPLACE')
+        weight_group = source.vertex_groups.get('__BALANCE_R', None) or source.vertex_groups.new(name='__BALANCE_R')
+        for n, v in enumerate(balance):
+            weight_group.add([n], 1-v, 'REPLACE')
         return {'FINISHED'}

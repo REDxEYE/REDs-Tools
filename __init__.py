@@ -11,7 +11,7 @@ from . import mesh_operators
 bl_info = {
     "name": "RED's Tools",
     "author": "RED_EYE",
-    "version": (1, 0),
+    "version": (1, 3),
     "blender": (2, 80, 0),
     "description": "Tools for preparing armature for Source Engine export",
     "category": "Tools"
@@ -41,6 +41,12 @@ bone_chains = [
     ('LPNK', 'Left pinky finger', "", 12),
     ('RPNK', 'Right pinky finger', "", 13),
 
+]
+
+forward_axis = [
+    ("X", "X", "", 0),
+    ("Y", "Y", "", 1),
+    ("Z", "Z", "", 2),
 ]
 
 
@@ -120,6 +126,9 @@ def register():
     bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
     bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
 
+    bpy.types.Scene.ForwardAxis = bpy.props.EnumProperty(name="Forward axis", items=forward_axis)
+    bpy.types.Scene.SplitPower = bpy.props.FloatProperty(name="Split power", min=0, max=1, default=0.995, precision=4)
+
     register_()
 
     bpy.types.IMAGE_MT_image.append(split_alpha_menu)
@@ -140,6 +149,7 @@ def unregister():
     del bpy.types.Scene.EyesRight
     del bpy.types.Scene.EyesLeft
     del bpy.types.Scene.AngDev
+    del bpy.types.Scene.ForwardAxis
     unregister_()
 
 

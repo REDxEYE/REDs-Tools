@@ -125,13 +125,16 @@ class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
 
     def execute(self, context):
         source = context.active_object
+        split_axis = context.scene.ForwardAxis
+        split_power = context.scene.SplitPower
+        axis_id = {"X": 0, "Y": 1, "Z": 2}[split_axis]
 
         src_vertices = np.zeros((len(source.data.vertices) * 3,), dtype=np.float32)
         source.data.vertices.foreach_get('co', src_vertices)
         src_vertices = src_vertices.reshape((-1, 3))
         dimm = src_vertices.max() - src_vertices.min()
-        balance_width = dimm * (1 - (99.3 / 100))
-        balance = src_vertices[:, 0]
+        balance_width = dimm * (1 - split_power)
+        balance = src_vertices[:, axis_id]
         balance = np.clip((-balance / balance_width / 2) + 0.5, 0, 1)
 
         weight_group = source.vertex_groups.new(name='__BALANCE')

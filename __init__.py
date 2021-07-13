@@ -74,6 +74,11 @@ def split_alpha_menu(self, context):
 
 
 classes = [
+    mesh_operators.SHAPE_KEYS_OT_TransferShapes,
+    mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
+    mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
+    mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
+
     rename_bones.BONE_OT_RenameButtonBip,
     rename_bones.BONE_OT_RenameButtonValveBiped,
     rename_bones.BONE_PT_RenamePanel,
@@ -97,10 +102,7 @@ classes = [
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_TrasnferShapes,
 
-    mesh_operators.SHAPE_KEYS_OT_TransferShapes,
-    mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
-    mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
-    mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
+
 
     IMAGE_MT_AlphaSplit
 ]

@@ -111,8 +111,8 @@ register_, unregister_ = bpy.utils.register_classes_factory(classes)
 
 def register():
     bpy.types.Scene.NameTemplate = bpy.props.StringProperty(name="", default='bip_bone_{1}')
-    bpy.types.Scene.LeftEye = bpy.props.FloatVectorProperty(name="Left eye")
-    bpy.types.Scene.RightEye = bpy.props.FloatVectorProperty(name="Right eye")
+    bpy.types.Scene.LeftEye = bpy.props.FloatVectorProperty(name="Left Eye")
+    bpy.types.Scene.RightEye = bpy.props.FloatVectorProperty(name="Right Eye")
     bpy.types.Scene.Armature = bpy.props.StringProperty(
         name='Armature',
         description='Main armature',
@@ -127,6 +127,14 @@ def register():
     bpy.types.Scene.EyesRight = bpy.props.FloatProperty(name="Right eyes max", min=0, max=360)
     bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
     bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
+
+    bpy.types.Scene.HeadObject = bpy.props.StringProperty(name='Object Name',description='Head Object name')
+    bpy.types.Scene.UpperLower = bpy.props.FloatProperty(name='Upper Lid Lowerer', description='DmxEyelid: Upper Lid Lowerer location')
+    bpy.types.Scene.UpperNeutral = bpy.props.FloatProperty(name='Upper Lid Neutral', description='DmxEyelid: Upper Lid Neutral location')
+    bpy.types.Scene.UpperRaiser = bpy.props.FloatProperty(name='Upper Lid Raiser', description='DmxEyelid: Upper Lid Raiser location')
+    bpy.types.Scene.LowerLowerer = bpy.props.FloatProperty(name='Lower Lid Lowerer', description='DmxEyelid: Lower Lid Lowerer location')
+    bpy.types.Scene.LowerNeutral = bpy.props.FloatProperty(name='Lower Lid Neutral', description='DmxEyelid: Lower Lid Neutral location')
+    bpy.types.Scene.LowerRaiser = bpy.props.FloatProperty(name='Lower Lid Raiser', description='DmxEyelid: Lower Lid Raiser location')
 
     bpy.types.Scene.ForwardAxis = bpy.props.EnumProperty(name="Forward axis", items=forward_axis)
     bpy.types.Scene.SplitPower = bpy.props.FloatProperty(name="Split power", min=0, max=1, default=0.995, precision=4)
@@ -152,6 +160,13 @@ def unregister():
     del bpy.types.Scene.EyesLeft
     del bpy.types.Scene.AngDev
     del bpy.types.Scene.ForwardAxis
+    del bpy.types.Scene.HeadObject
+    del bpy.types.Scene.UpperLower
+    del bpy.types.Scene.UpperNeutral
+    del bpy.types.Scene.UpperRaiser
+    del bpy.types.Scene.LowerLowerer
+    del bpy.types.Scene.LowerNeutral
+    del bpy.types.Scene.LowerRaiser
     unregister_()
 
 

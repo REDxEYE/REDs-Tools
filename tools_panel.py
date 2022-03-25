@@ -21,6 +21,8 @@ class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
         row = layout.row()
         row.label(text="Target armature")
         row.prop_search(scn, "Armature", scn, "objects", text='')
+        row.label(text="Target Head")
+        row.prop_search(scn, "HeadObject", scn, "objects", text='')
 
 
 # noinspection PyPep8Naming
@@ -103,6 +105,7 @@ class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
         column.operator("qceyes.generate_qc")
         column.separator()
         column = box.column()
+        column.separator()
         column.prop(scn, 'LeftEye')
         column.prop(scn, 'RightEye')
         column.prop_search(scn, 'LeftEyeMat', bpy.data, 'materials')
@@ -114,6 +117,17 @@ class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
         row.prop(scn, 'EyesLeft')
         row.prop(scn, 'EyesRight')
         column.prop(scn, 'AngDev')
+        if scn.HeadObject and bpy.data.objects[scn.HeadObject].type == "OBJECT":
+            column = box.column()
+            column.prop_search(scn, 'HeadObject', text='')
+            column.separator()
+        column.separator()
+        column.prop(scn, 'UpperLower')
+        column.prop(scn, 'UpperNeutral')
+        column.prop(scn, 'UpperRaiser')
+        column.prop(scn, 'LowerLowerer')
+        column.prop(scn, 'LowerNeutral')
+        column.prop(scn, 'LowerRaiser')
         if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
             row = column.row()
             row.label(text="Head Bone")

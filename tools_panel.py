@@ -1,33 +1,186 @@
 import bpy
 
 from bpy.props import *
-
-from .bone_table import bone_table_valvebiped, bone_table_bip
+import addon_utils
+#from .bone_table import bone_table_valvebiped, bone_table_bip
 
 
 class View3DTools:
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
+    bl_category = "Tool"
 
 
-# noinspection PyPep8Naming
-class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.panel'
-    bl_label = 'Source engine tools'
+class VALVE_PT_ToolsPanel(View3DTools, bpy.types.Panel):
+    """Control which Armature and Object we'll work on"""
+    bl_idname = 'VALVE_PT_TOOLSPANEL'
+    bl_label = 'Source Engine tools'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         scn = context.scene
         layout = self.layout
         row = layout.row()
         row.label(text="Target armature")
-        row.prop_search(scn, "Armature", scn, "objects", text='')
+        row.prop_search(scn, "Armature", scn, "objects", text='', icon="ARMATURE_DATA")
+        row.label(text="Target Head")
+        row.prop_search(scn, "HeadObject", scn, "objects", text='', icon="OUTLINER_OB_MESH")
 
 
-# noinspection PyPep8Naming
-class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.rename_panel'
+class VALVE_PT_ArmatureTools(View3DTools, bpy.types.Panel):
+    """All related options related to aid ARMATURE"""
+    #bl_idname = 'valve.armature_panel'
+    bl_label = 'Armature tools'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        layout.use_property_split = False
+        layout.use_property_decorate = False
+
+        layout.label(text="Work with active armature")
+
+        split = layout.split()
+        #box = layout.box()
+        col = split.column()
+        row = col.row(align=True)
+
+        # column = box.column(align=True)
+        # column.separator()
+
+        col = layout.column(align=True)
+        row = col.row(align=True)
+        row.label(text="Bone Operators:")
+        row = col.row(align=True)
+        row.operator('valve.bone_viewmode')
+        row.operator('valve.bones_shape_clear')
+        row.operator('valve.setup_bones_layers')
+        #row.operator('valve.comparearmatures')
+        col.operator('valve.armature_connect')
+        col.operator('valve.armature_merge')
+        col.operator('valve.copypose')
+        row = col.row(align=True)
+        row.operator('armature.bone_location_lock')
+        row.operator("pose.constraints_clear")
+        row = col.row(align=True)
+        col.operator('armature.empty_to_bones', icon='EMPTY_AXIS')
+
+        row = col.row(align=True)
+        row.label(text="To Clipboard:")
+        row = col.row(align=True)
+        row.operator('valve.weighted_bones_to_clipboard')
+        row.operator('valve.selected_bones_to_clipboard')
+        row.operator('valve.bonemerge_to_clipboard')
+        row = col.row(align=True)
+        #row.label(text="Procedurals:")
+        #row = col.row(align=True)
+        SourceOps, _ = addon_utils.check("SourceOps")
+        if SourceOps:
+        #    row.operator('sourceops.pose_bone_transforms(type="TRANSLATION")', text="Relative Location")
+        #    row.operator('sourceops.pose_bone_transforms(type="ROTATION")', text="Relative Rotaion")
+            col.operator('valve.proceduralbone')
+
+        row = col.row(align=True)
+        row.prop(scn, 'BoneList')
+        row = col.row(align=True)
+        row.operator('valve.rename_bones_dict', icon='BONE_DATA')
+
+        bst, _ = addon_utils.check("io_scene_valvesource")
+        if bst:
+            row = col.row()
+            row.label(text="Batch Export")
+            row = col.row(align=True)
+            row.operator('valve.batch_export_actions', text="Action")
+            row.operator('valve.batch_export_actions_retarget', text="Action Retarget")
+
+        #row = col.row()
+        #row.operator('valve.rename_biped')
+        #row.operator('valve.rename_bip')
+        #row.prop(scn, 'NameTemplate', icon='TEXT')
+        #row.operator('valve.rename_chain')
+
+
+class VALVE_PT_MeshTools(View3DTools, bpy.types.Panel):
+    """All related options related to MESH edits, such Shape Keys"""
+    #bl_idname = 'valve.mesh_panel'
+    bl_label = 'Mesh tools'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.label(text="Most tools works for the active object")
+
+        split = layout.split(align=True)
+        col = split.column(align=True)
+
+        row = col.row(align=True)
+        row.operator('valve.createfacs')
+        row.operator('valve.createfacs', text="Create Corrective Shapes")
+        bst, _ = addon_utils.check("io_scene_valvesource")
+        if bst:
+            col.operator('object.sourcetools_generate_corrective_drivers', text="Create Corrective Drivers")
+        row.operator('mesh.clear_blank_shape_keys')
+
+'''
+class VALVE_PT_TextureTools(View3DTools, bpy.types.Panel):
+    """All related options related to Image edits"""
+    bl_idname = 'valve.texture_panel'
+    bl_label = 'Texture tools'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.label(text="Most tools works for the active object")
+
+        split = layout.split()
+        #box = layout.box()
+        col = split.column()
+        row = col.row(align=True)
+
+        row.operator("alpha.split")
+'''
+'''
+class VALVE_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
+    bl_idname = 'valve.shape_transfer'
+    bl_label = 'Transfer shapes'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        scn = context.scene
+        layout = self.layout
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.operator('red_utils.transfer_shapes')
+        layout.operator('red_utils.bake_shape_ranges')
+        layout.operator('red_utils.bake_shape')
+        box = layout.box()
+        box.prop(scn, 'ForwardAxis')
+        box.prop(scn, 'SplitPower')
+        box.operator('red_utils.create_stereo_split')
+'''
+'''
+class VALVE_PT_RenameTools(View3DTools, bpy.types.Panel):
+    #bl_idname = 'valve.rename_panel'
     bl_label = 'Renaming tools'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -45,99 +198,5 @@ class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
         box.prop(scn, 'NameFormat')
         box.separator()
         box.prop(scn, 'BoneChains')
-        box.operator('valve.renamechain')
-
-
-# noinspection PyPep8Naming
-class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.armature_panel'
-    bl_label = 'Armature tools'
-    bl_parent_id = 'valve.panel'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.label(text="Armature tools")
-        layout.label(text="Work with active armature")
-        box = layout.box()
-        box.operator("valve.cleanbones")
-        box.operator("valve.cleanbonesconstraints")
-        box.operator('valve.compare_armatures')
-
-        row = box.row()
-        row.operator("rename.biped")
-        row.operator("rename.bip")
-
-        row = box.row()
-        row.prop(scn, 'NameTemplate', icon='TEXT')
-        row.operator('rename.chain')
-
-        box.operator('armature.connect')
-        box.operator('armature.merge')
-
-
-# noinspection PyPep8Naming
-class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.qc_eye_panel'
-    bl_label = 'Qc eyes tools'
-    bl_parent_id = 'valve.panel'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        box = layout.box()
-        column = box.column(align=True)
-        column.operator("qceyes.popup")
-        column.separator()
-        column.operator("create.eyedummy")
-        column.operator("qceyes.generate_qc")
-        column.separator()
-        column = box.column()
-        column.prop(scn, 'LeftEye')
-        column.prop(scn, 'RightEye')
-        column.prop_search(scn, 'LeftEyeMat', bpy.data, 'materials')
-        column.prop_search(scn, 'RightEyeMat', bpy.data, 'materials')
-        row = column.row()
-        row.prop(scn, 'EyesUp')
-        row.prop(scn, 'EyesDown')
-        row = column.row()
-        row.prop(scn, 'EyesLeft')
-        row.prop(scn, 'EyesRight')
-        column.prop(scn, 'AngDev')
-        if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
-            row = column.row()
-            row.label(text="Head Bone")
-            row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
-
-
-# noinspection PyPep8Naming
-class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.shape_transfer'
-    bl_label = 'Transfer shapes'
-    bl_parent_id = 'valve.panel'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.operator('red_utils.transfer_shapes')
-        layout.operator('red_utils.bake_shape_ranges')
-        layout.operator('red_utils.bake_shape')
-        box = layout.box()
-        box.prop(scn, 'ForwardAxis')
-        box.prop(scn, 'SplitPower')
-        box.operator('red_utils.create_stereo_split')
+        box.operator('valve.renamebonechain')
+'''

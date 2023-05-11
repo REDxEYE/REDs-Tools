@@ -4,7 +4,6 @@ from bpy.props import *
 import numpy as np
 
 
-# noinspection PyPep8Naming
 class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
     bl_idname = "red_utils.transfer_shapes"
     bl_label = "Transfer shapes"

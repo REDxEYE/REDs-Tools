@@ -1,173 +1,26 @@
 import bpy
+import math
+from mathutils import Vector, Euler, Matrix
 
 from bpy.props import *
 
-from .bone_table import bone_table_valvebiped, bone_table_bip
+#from .bone_table import bone_table_valvebiped, bone_table_bip
+
+from .rename_dicts.bio3_to_tf2 import names as bio3_to_tf2
+from .rename_dicts.valvebiped_to_blender import names as valvebiped_to_blender
+from .rename_dicts.tf2_to_blender import names as tf2_to_blender
+from .rename_dicts.rxd_blender import names as rxd_to_blender
+from .rename_dicts.rigfy_to_blender import names as rigfy_to_blender
+from .rename_dicts.mmd_to_valvebiped import names as mmd_to_valvebiped
+from .rename_dicts.kofas_blender import names as kofas_to_blender
+from .rename_dicts.fortnite_to_blender import names as fortnite_to_blender
+from .rename_dicts.cybersleuth_to_blender import names as cybersleuth_to_blender
+from .rename_dicts.blender_to_valvebiped import names as blender_to_valvebiped
 
 
-def track_l_eye(_):
-    obj = bpy.data.objects['VALVE_EYEDUMMY_L']
-    bpy.context.scene.LeftEye = obj.location
-
-
-def track_r_eye(_):
-    obj = bpy.data.objects['VALVE_EYEDUMMY_R']
-    bpy.context.scene.RightEye = obj.location
-
-
-# noinspection PyPep8Naming,PyMethodMayBeStatic
-class EYES_OT_CreateEyeDummies(bpy.types.Operator):
-    bl_idname = "create.eyedummy"
-    bl_label = "Create eye dummies"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    def execute(self, context):
-        try:
-            bpy.ops.object.mode_set(mode='OBJECT')
-        except:
-            pass
-        if not (
-            bpy.data.objects.get('VALVE_EYEDUMMY_L', None)
-            and bpy.data.objects.get('VALVE_EYEDUMMY_R', None)
-        ):
-            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5)
-            eye_L = context.active_object
-            eye_L.name = 'VALVE_EYEDUMMY_L'
-            bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5)
-            eye_R = context.active_object
-            eye_R.name = 'VALVE_EYEDUMMY_R'
-            bpy.app.handlers.depsgraph_update_post.append(track_l_eye)
-            bpy.app.handlers.depsgraph_update_post.append(track_r_eye)
-            bpy.ops.qceyes.popup('EXEC_DEFAULT')
-        return {'FINISHED'}
-
-
-attachment_string = '$Attachment "{name}" "{p_bone}" {x} {y} {z} absolute\n'
-eyeball_string = 'eyeball {eyeball_side} "{p_bone}" {x} {y} {z} "{mat_name}" 3 {angle} "iris_unused" {size}\n'
-flexcont_string = 'flexcontroller eyes range -{angle1} {angle2} {fc_type}\n'
-
-
-# noinspection PyPep8Naming
-class BONES_OT_CleanBones(bpy.types.Operator):
-    bl_idname = "valve.cleanbones"
-    bl_label = "Remove custom shapes"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ob = context.active_object
-        if ob.type == "ARMATURE":
-            for bone in ob.pose.bones:
-                bone.custom_shape = None
-        else:
-            self.report({"ERROR"},
-                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
-                        .format(ob.type.lower()))
-        return {'FINISHED'}
-
-
-# noinspection PyPep8Naming
-class BONES_OT_CleanBonesConstraints(bpy.types.Operator):
-    bl_idname = "valve.cleanbonesconstraints"
-    bl_label = "Remove constraints"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ob = context.active_object
-        if ob.type == "ARMATURE":
-            for bone in ob.pose.bones:
-                for c in bone.constraints:
-                    bone.constraints.remove(c)
-        else:
-            self.report({"ERROR"},
-                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
-                        .format(ob.type.lower()))
-        return {'FINISHED'}
-
-
-# noinspection PyPep8Naming
-class BONES_OT_QCEyesQCGenerator(bpy.types.Operator):
-    bl_idname = "qceyes.generate_qc"
-    bl_label = "Generate QC string"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        eye_l = bpy.data.objects.get('VALVE_EYEDUMMY_L', None)
-        eye_r = bpy.data.objects.get('VALVE_EYEDUMMY_R', None)
-        p_bone = bpy.data.objects[str(bpy.context.scene.Armature)].data.bones[str(bpy.context.scene.HeadBone)]
-        if eye_l and eye_r:
-            if not bpy.data.texts.get("qc_eyes.qc", None):
-                qc_string = bpy.data.texts.new('qc_eyes.qc')
-            else:
-                qc_string = bpy.data.texts['qc_eyes.qc']
-            qc_string.write(attachment_string.format(name="eyes", p_bone=p_bone.name,
-                                                     x=abs(eye_r.location.x) - abs(eye_l.location.x),
-                                                     y=avg(eye_l.location.y, eye_r.location.y),
-                                                     z=avg(eye_l.location.z, eye_r.location.z)))
-            qc_string.write(attachment_string.format(name="righteye", p_bone=p_bone.name,
-                                                     x=eye_r.location.x,
-                                                     y=eye_r.location.y,
-                                                     z=eye_r.location.z))
-            qc_string.write(attachment_string.format(name="lefteye", p_bone=p_bone.name,
-                                                     x=eye_l.location.x,
-                                                     y=eye_l.location.y,
-                                                     z=eye_l.location.z))
-            qc_string.write('\n')
-
-            qc_string.write(eyeball_string.format(eyeball_side="righteye", p_bone=p_bone.name,
-                                                  x=eye_l.location.x,
-                                                  y=eye_l.location.y,
-                                                  z=eye_l.location.z,
-                                                  mat_name=bpy.context.scene.RightEyeMat,
-                                                  angle=bpy.context.scene.AngDev,
-                                                  size=eye_r.scale.x))
-            qc_string.write(eyeball_string.format(eyeball_side="lefteye", p_bone=p_bone.name,
-                                                  x=eye_l.location.x,
-                                                  y=eye_l.location.y,
-                                                  z=eye_l.location.z,
-                                                  mat_name=bpy.context.scene.LeftEyeMat,
-                                                  angle=-bpy.context.scene.AngDev,
-                                                  size=eye_r.scale.x))
-            qc_string.write('\n')
-
-            qc_string.write(flexcont_string.format(angle1=bpy.context.scene.EyesUp, angle2=bpy.context.scene.EyesDown,
-                                                   fc_type='eyes_updown'))
-            qc_string.write(
-                flexcont_string.format(angle1=bpy.context.scene.EyesRight, angle2=bpy.context.scene.EyesLeft,
-                                       fc_type='eyes_rightleft'))
-
-        else:
-            self.report({"ERROR"},
-                        "Can't find eye dummies, did ya create 'em?")
-        return {'FINISHED'}
-
-
-def avg(*args):
-    return sum(args) / len(args)
-
-
-# noinspection PyPep8Naming
-class EYES_OT_QCEyesPopup(bpy.types.Operator):
-    """Help popup"""
-    bl_idname = "qceyes.popup"
-    bl_label = "QC eyes how to use!"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def invoke(self, context, event):
-        width = 400 * bpy.context.preferences.system.pixel_size
-        return context.window_manager.invoke_props_dialog(self, width=width)
-
-    def draw(self, context):
-        layout = self.layout
-        box = layout.box()
-        box.label(text="How to use!")
-        col = box.column(align=True)
-        col.label(text="Place both dummies where eyes supposed to be")
-        col.separator()
-        col.label(text="Apply eyes materials to them")
-        col.label(text="After all this trash click \"Generate QC\"")
-
-    def execute(self, context):
-        return {'FINISHED'}
+def enable_if(context, is_mode):
+    '''return True if active object is in is_mode'''
+    return context.active_object and context.active_object.type == is_mode
 
 
 def get_bonechain(val):
@@ -208,10 +61,12 @@ def find_line_of_sight(start, end):
 
 
 def close(a, b):
+    '''return abs(a - b) < 0.1'''
     return abs(a - b) < 0.1
 
 
 def find_mirror_bone(ob, bone):
+    '''We don't care for names here, return bone object which have a X-Mirror aestetic'''
     for o_bone in ob.pose.bones:
         if bone != o_bone and \
                 close(o_bone.head.x, (-1 * bone.head.x)) and \
@@ -221,15 +76,454 @@ def find_mirror_bone(ob, bone):
 
 
 def mirror_name(name):
+    '''return mirror name postfix.
+    Note: is this deprecated?'''
     if name[-1].upper() == 'L':
         return name[:-1] + 'R'
     if name[-1].upper() == 'R':
         return name[:-1] + 'L'
 
 
-# noinspection PyPep8Naming
-class BONES_OT_RenameBoneChains(bpy.types.Operator):
-    bl_idname = "valve.renamechain"
+def bone_list_switch(case):
+    '''Seleciona e retorna o dicionário de bones com base na lista de imports'''
+    if case == "blender_valve":
+        return blender_to_valvebiped
+    if case == "valve_blender":
+        return valvebiped_to_blender
+    if case == "dscs_to_blender":
+        return cybersleuth_to_blender
+    if case == "rxd_blender":
+        return rxd_to_blender
+    if case == "rigfy_blender":
+        return rigfy_to_blender
+    if case == "mmd_valvebiped":
+        return mmd_to_valvebiped
+    if case == "kofas_blender":
+        return kofas_to_blender
+    if case == "fortnite_blender":
+        return fortnite_to_blender
+    if case == "tf2_blender":
+        return tf2_to_blender
+    if case == "bio3_tf2":
+        return bio3_to_tf2
+    print("[ERROR]: The list used by bone_list_switch() doesn't exist")
+
+
+def is_mode(a, b):
+    '''se objeto não estiver no modo {1}, o coloca no mode {2}'''
+    if bpy.context.mode != a : bpy.ops.object.mode_set(mode=b)
+
+
+def set_mode(vm):
+    if vm == 'EDIT_ARMATURE':
+        bpy.ops.object.mode_set(mode='EDIT')
+    else:
+        bpy.ops.object.mode_set(mode=vm)
+
+
+def set_active_object(object_name):
+    '''set object_name as active object'''
+    bpy.context.view_layer.objects.active = bpy.data.objects[object_name]
+    bpy.data.objects[object_name].select_set(state=True)
+
+
+def get_edit_bone(name):
+    '''return bone if editable bone name exists for active object'''
+    return bpy.context.object.data.edit_bones.get(name)
+
+
+def get_pose_bone(name):
+    '''return bone if pose bone name exists for active object'''
+    return bpy.context.active_object.pose.bones.get(name)
+
+
+def get_object(name):
+    '''return object if name exists for active object'''
+    return bpy.data.objects.get(name)
+        
+
+def select_bones_if_nothing():
+    '''Select All bones in case theres no bones selected for active object'''
+    if bpy.context.selected_editable_bones == []:
+        bpy.ops.armature.select_all(action='SELECT')
+
+
+def mat3_to_vec_roll(mat):
+    vec = mat.col[1]
+    vecmat = vec_roll_to_mat3(mat.col[1], 0)
+    vecmatinv = vecmat.inverted()
+    rollmat = vecmatinv @ mat
+    roll = math.atan2(rollmat[0][2], rollmat[2][2])
+    return vec, roll
+
+
+def vec_roll_to_mat3(vec, roll):
+    target = Vector((0, 0.1, 0))
+    nor = vec.normalized()
+    axis = target.cross(nor)
+    if axis.dot(axis) > 0.0000000001: # this seems to be the problem for some bones, no idea how to fix
+        axis.normalize()
+        theta = target.angle(nor)
+        bMatrix = Matrix.Rotation(theta, 3, axis)
+    else:
+        updown = 1 if target.dot(nor) > 0 else -1
+        bMatrix = Matrix.Scale(updown, 3)               
+        bMatrix[2][2] = 1.0
+
+    rMatrix = Matrix.Rotation(roll, 3, nor)
+    mat = rMatrix @ bMatrix
+    return mat
+
+
+def hierarchy(child, parent):
+    '''Imitando o comando $hierarchy da Source Engine.\n
+    Faz o {1} ser filho de {2}'''
+    is_mode('EDIT_ARMATURE', 'EDIT')
+    bone1 = get_edit_bone(child)
+    bone2 = get_edit_bone(parent)
+    bone1.parent = bone2
+    #if not bone1.name == child:  print( "Child Bone " + bone1 + " not found, please set it up")
+    #if not bone2.name == parent: print("Parent Bone " + bone2 + " not found, please set it up")
+
+
+def helper(helper, parent):
+    ''''Isso já contém toda combinação de helper que uso'''
+    h = 'Helper_'
+    v = 'ValveBiped.Bip01_'
+    # Helpers
+    hierarchy(h+helper+'_L', v+'L_'+parent)
+    hierarchy(h+helper+'_R', v+'R_'+parent)
+    # Helpers que eu quase não uso
+    hierarchy(h+'L_'+helper, v+'L_'+parent)
+    hierarchy(h+'R_'+helper, v+'R_'+parent)
+    # ValveBiped Helpers
+    hierarchy(v+'L_'+helper, v+'L_'+parent)
+    hierarchy(v+'R_'+helper, v+'R_'+parent)
+
+
+def valvebiped():
+    v = 'ValveBiped.Bip01_'
+    hierarchy(v+'Pelvis',     "")
+    hierarchy(v+'Spine',      v+'Pelvis')
+    hierarchy(v+'Spine1',     v+'Spine')
+    hierarchy(v+'Spine2',     v+'Spine1')
+    hierarchy(v+'Spine4',     v+'Spine2')
+    hierarchy(v+'Neck1',      v+'Spine4')
+    hierarchy(v+'Head1',      v+'Neck1')
+    hierarchy(v+'L_Clavicle', v+'Spine4')
+    hierarchy(v+'L_UpperArm', v+'L_Clavicle')
+    hierarchy(v+'L_Forearm',  v+'L_UpperArm')
+    hierarchy(v+'L_Hand',     v+'L_Forearm')
+    hierarchy(v+'R_Clavicle', v+'Spine4')
+    hierarchy(v+'R_UpperArm', v+'R_Clavicle')
+    hierarchy(v+'R_Forearm',  v+'R_UpperArm')
+    hierarchy(v+'R_Hand',     v+'R_Forearm')
+    hierarchy(v+'L_Thigh',    v+'Pelvis')
+    hierarchy(v+'L_Calf',     v+'L_Thigh')
+    hierarchy(v+'L_Foot',     v+'L_Calf')
+    hierarchy(v+'L_Toe',      v+'L_Foot')
+    hierarchy(v+'L_Toe0',     v+'L_Foot')
+    hierarchy(v+'L_Toe1',     v+'L_Foot')
+    hierarchy(v+'L_Toe2',     v+'L_Foot')
+    hierarchy(v+'L_Toe3',     v+'L_Foot')
+    hierarchy(v+'L_Toe4',     v+'L_Foot')
+    hierarchy(v+'R_Thigh',    v+'Pelvis')
+    hierarchy(v+'R_Calf',     v+'R_Thigh')
+    hierarchy(v+'R_Foot',     v+'R_Calf')
+    hierarchy(v+'R_Toe',      v+'R_Foot')
+    hierarchy(v+'R_Toe0',     v+'R_Foot')
+    hierarchy(v+'R_Toe1',     v+'R_Foot')
+    hierarchy(v+'R_Toe2',     v+'R_Foot')
+    hierarchy(v+'R_Toe3',     v+'R_Foot')
+    hierarchy(v+'R_Toe4',     v+'R_Foot')
+
+
+def procedurals():
+    hierarchy('Helper_Neck', 'ValveBiped.Bip01_Neck1')
+    hierarchy('Helper_Head', 'ValveBiped.Bip01_Head1')
+    helper('Latt', 'Spine2')
+    helper('Trapezius', 'Clavicle')
+    helper('Armor', 'UpperArm')
+    helper('Shoulder', 'UpperArm')
+    helper('UpperArm_twist', 'UpperArm')
+    helper('Bicep', 'UpperArm')
+    helper('Elbow', 'UpperArm')
+    helper('Ulna', 'Forearm')
+    helper('Wrist', 'Forearm')
+    helper('Thumb_root', 'Hand')
+    helper('Hip', 'Thigh')
+    helper('Hips', 'Thigh')
+    helper('Sartorius', 'Thigh')
+    helper('Quadricep', 'Thigh')
+    helper('Quad', 'Thigh')
+    helper('Knee', 'Thigh')
+    helper('Shin', 'Calf')
+    helper('Soleous', 'Calf')
+    helper('Ankle', 'Calf')
+    helper('Thumb', 'Foot')
+    helper('Pinky', 'Foot')
+    helper('Toe', 'Foot')
+
+
+def toggle_material_nodes(bool=False):
+    for EachMaterial in bpy.data.materials:
+       EachMaterial.use_nodes = bool
+
+
+class VALVE_OT_CleanBonesShape(bpy.types.Operator):
+    """Remove custom shapes for selected bones"""
+    bl_idname = "valve.bones_shape_clear"
+    bl_label = "Remove custom shapes"
+    bl_description = "Remove custom shapes for selected bones"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'ARMATURE')
+        
+    def execute(self, context):
+        ob = context.active_object
+        if ob.type == "ARMATURE":
+            for bone in ob.pose.bones:
+                bone.custom_shape = None
+        else:
+            self.report({"ERROR"},
+                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
+                        .format(ob.type.lower()))
+        return {'FINISHED'}
+
+
+class VALVE_OT_RenameBonesTo(bpy.types.Operator):
+    """Rename Bones to selected BoneList dictionary"""
+    bl_idname = "valve.rename_bones_dict"
+    bl_label = "Rename bones"
+    bl_description = "Rename bones from the selected armature using above \"Bone list\" dictionary"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'ARMATURE')
+
+    def execute(self, context):
+        ob = context.active_object
+        if not ob:
+            self.report({"ERROR"}, "Select something!")
+            return {'FINISHED'}
+        if ob.type == "ARMATURE":
+            bones = ob.data.bones
+
+            names = bone_list_switch(bpy.context.scene.BoneList)
+
+            if (bones):
+                for bone in bones:
+                    newName = names.get(bone.name)
+                    if (newName):
+                        bone.name = newName
+
+        else:
+            self.report({"ERROR"},
+                        "What is this? {} is not armature! I need armature!".format(ob.type.lower().title()))
+        return {'FINISHED'}
+
+
+class ARMATURE_OT_LockBoneLocation(bpy.types.Operator):
+    """Lock All ValveBiped bones position.
+    Useful for retarget poses"""
+    bl_idname = "armature.bone_location_lock"
+    bl_label = "Lock Loc"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'ARMATURE')
+
+    def execute(self, context):
+        prefix = "ValveBiped"
+        armature = context.active_object.pose.bones
+
+        for bone in armature:
+            if bone.name.lower().startswith(prefix.lower()):
+                has_constraint = False
+                for const in bone.constraints:
+                    if const.type == 'LIMIT_LOCATION' and const.name == "Lock Location":
+                        has_constraint = True
+                        break
+                if not has_constraint:
+                    const = bone.constraints.new(type='LIMIT_LOCATION')
+                    const.name = "Lock Location"
+                    const.owner_space = 'LOCAL'
+                    const.use_transform_limit = True
+                    const.use_min_x = True
+                    const.use_max_x = True
+                    const.use_min_y = True
+                    const.use_max_y = True
+                    const.use_min_z = True
+                    const.use_max_z = True
+        return {'FINISHED'}
+
+
+class ARMATURE_OT_SetBoneViewMode(bpy.types.Operator):
+    """For all selected bones, define a specific viewport display"""
+    bl_idname = "valve.bone_viewmode"
+    bl_label = "Setup Bone Viewmode"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'ARMATURE')
+
+    def execute(self, context):
+        is_mode('EDIT_ARMATURE', 'EDIT')
+
+        ob = context.active_object
+
+        select_bones_if_nothing()
+
+        for bone in context.selected_editable_bones:
+            bone.envelope_distance = 6.0
+            bone.length = 3.0
+
+        set_mode('POSE')
+
+        for bone in context.selected_pose_bones_from_active_object:
+            bone.custom_shape = get_object('smd_bone_vis')
+            bone.use_custom_shape_bone_size = False
+            for n in range(3):
+                bone.custom_shape_scale_xyz[n] = 0.2
+
+        set_mode('OBJECT')
+
+        name = ob.name
+        bpy.data.objects[name].display_type = 'WIRE'
+        bpy.data.objects[name].show_in_front = True
+        a = bpy.data.armatures[name]
+        a.display_type = 'STICK'
+        a.show_axes = True
+        a.show_bone_custom_shapes = True
+        a.show_group_colors = True
+
+        return {'FINISHED'}
+
+
+class ARMATURE_OT_SetBoneHierarchy(bpy.types.Operator):
+    """Enforce ValveBiped hierarchy"""
+    bl_idname = "valve.bone_hierarchy"
+    bl_label = "Valve Hierarchy"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'ARMATURE')
+
+    def execute(self, context):
+        vm = context.mode
+        is_mode('EDIT_ARMATURE', 'EDIT')
+
+        # TODO: adicionar um seletor.
+        valvebiped() # (?)
+        procedurals() # (?)
+
+        set_mode(vm)
+
+        return {'FINISHED'}
+
+
+class VALVE_OT_ConnectBones(bpy.types.Operator):
+    """Conect all detached bones to it child following the constraint."""
+    bl_idname = "valve.armature_connect"
+    bl_label = "Connect bones"
+
+    @classmethod
+    def poll(self, context):
+        return True if context.active_object is not None and (context.active_object.type == 'ARMATURE') else False
+
+
+    def execute(self, context):
+        bpy.ops.object.mode_set(mode='EDIT')
+        for bone_ in context.selected_editable_bones:
+
+            if bone_.parent:
+                parent = bone_.parent
+                if len(parent.children) > 1:
+                    bone_.use_connect = False
+                    parent.tail = sum([ch.head for ch in parent.children], Vector()) / len(parent.children)
+                else:
+                    parent.tail = bone_.head
+                    bone_.use_connect = True
+                    if bone_.children == 0:
+                        par = bone_.parent
+                        if par.children > 1:
+                            pass
+                        bone_.tail = bone_.head + (par.tail - par.head)
+                    if not bone_.parent and bone_.children > 1:
+                        bone_.tail = (bone_.head + bone_.tail) * 2
+                if bone_.head == parent.head:
+                    print(bone_.name)
+                    bone_.tail = parent.tail
+                elif not bone_.children:
+                    vec = bone_.parent.head - bone_.head
+                    bone_.tail = bone_.head - vec / 2
+
+        bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
+        bpy.ops.object.mode_set(mode='POSE')
+        return {'FINISHED'}
+
+
+class VALVE_OT_MergeBoneWeights(bpy.types.Operator):
+    """this works?
+    seems it try to join weights from all selected bones to active bone"""
+    bl_idname = "valve.armature_merge"
+    bl_label = "Merge bone weights"
+
+    @classmethod
+    def poll(self, context):
+        if (context.active_object):
+            if context.active_object.type == 'ARMATURE':
+                if context.active_object.mode == 'POSE':
+                    return True
+        return False
+
+    def execute(self, context):
+        this = context.active_pose_bone
+        others = context.selected_pose_bones[1:]
+        arm = this.id_data
+        for other in others:
+            for child in arm.children:
+                # print(child)
+                if child.type == 'MESH':
+                    modifier = child.modifiers.new(type='VERTEX_WEIGHT_MIX', name='MERGE_{}_TO_{}'.format(other.name,this.name))
+                    # print(modifier, this, other)
+                    # print(child, child.type, modifier, this, other)
+                    modifier.vertex_group_a = this.name
+                    modifier.vertex_group_b = other.name
+                    modifier.mix_mode = 'ADD'
+                    modifier.mix_set = 'ALL'
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+
+        return {'FINISHED'}
+
+
+''' NOTE: super seeded by bpy.ops.pose.constraints_clear()
+class VALVE_OT_CleanBonesConstraints(bpy.types.Operator):
+    bl_idname = "valve.cleanbonesconstraints"
+    bl_label = "Remove constraints"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        ob = context.active_object
+        if ob.type == "ARMATURE":
+            for bone in ob.pose.bones:
+                for c in bone.constraints:
+                    bone.constraints.remove(c)
+        else:
+            self.report({"ERROR"},
+                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
+                        .format(ob.type.lower()))
+        return {'FINISHED'}
+
+
+class VALVE_OT_RenameBoneChains(bpy.types.Operator):
+    bl_idname = "valve.renamebonechain"
     bl_label = "Rename chain"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -274,14 +568,14 @@ class BONES_OT_RenameBoneChains(bpy.types.Operator):
 
 
 # noinspection PyPep8Naming,PyMethodMayBeStatic
-class BONES_OT_RenameChainPopup(bpy.types.Operator):
+class VALVE_OT_RenameChainPopup(bpy.types.Operator):
     """Help popup"""
     bl_idname = "valve.renamechainpopup"
     bl_label = "How to use!"
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-        width = 400 * bpy.context.preferences.system.pixel_size
+        width = int(400 * bpy.context.preferences.system.pixel_size)
         return context.window_manager.invoke_props_dialog(self, width=width)
 
     def draw(self, context):
@@ -298,10 +592,9 @@ class BONES_OT_RenameChainPopup(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# noinspection PyPep8Naming
 class BONES_TP_CompareArmatures(bpy.types.Operator):
     """Compared 2 armatures"""
-    bl_idname = "valve.compare_armatures"
+    bl_idname = "valve.comparearmatures"
     bl_label = "Compare 2 armatures"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -342,3 +635,4 @@ class BONES_TP_CompareArmatures(bpy.types.Operator):
             print('\033[91m{}\033[0m'.format(mis))
 
         return {'FINISHED'}
+'''

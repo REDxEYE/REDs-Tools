@@ -7,27 +7,31 @@ from .bone_table import bone_table_valvebiped, bone_table_bip
 
 class View3DTools:
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
+    bl_category = "Tool"
 
 
 # noinspection PyPep8Naming
 class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.panel'
-    bl_label = 'Source engine tools'
+    bl_idname = 'VALVE_PT_TOOLSPANEL'
+    bl_label = 'Source Engine tools'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         scn = context.scene
         layout = self.layout
         row = layout.row()
         row.label(text="Target armature")
-        row.prop_search(scn, "Armature", scn, "objects", text='')
+        row.prop_search(scn, "Armature", scn, "objects", text='', icon="ARMATURE_DATA")
+        row.label(text="Target Head")
+        row.prop_search(scn, "HeadObject", scn, "objects", text='', icon="OUTLINER_OB_MESH")
 
 
 # noinspection PyPep8Naming
 class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.rename_panel'
     bl_label = 'Renaming tools'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -52,7 +56,7 @@ class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
 class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.armature_panel'
     bl_label = 'Armature tools'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -85,7 +89,7 @@ class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
 class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.shape_transfer'
     bl_label = 'Transfer shapes'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):

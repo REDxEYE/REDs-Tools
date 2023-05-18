@@ -7,14 +7,18 @@ from . import tools_panel
 from . import rename_bones
 from . import operators
 from . import mesh_operators
+from . import qc_eyes
 
 bl_info = {
     "name": "RED's Tools",
-    "author": "RED_EYE",
-    "version": (1, 3),
+    "author": "RED_EYE, Davi (Debiddo) Gooz",
+    "version": (1, 4),
     "blender": (2, 80, 0),
-    "description": "Tools for preparing armature for Source Engine export",
-    "category": "Tools"
+    "location": "View3D > UI > Tool",
+    "description": "Multi-purpose tools preparing armature for Source Engine export",
+    'warning': '',
+    'wiki_url': 'https://github.com/REDxEYE/REDs-Tools/wiki',
+    "category": "Tool"
 }
 import importlib
 
@@ -41,6 +45,11 @@ bone_chains = [
     ('LPNK', 'Left pinky finger', "", 12),
     ('RPNK', 'Right pinky finger', "", 13),
 
+]
+
+eyelid_format = [
+    ("dmxeyelid", "DMX", "Use DMX file for eyelid shapes (recommended)", 0),
+    ("eyelid", "VTA", "Use VTA file for eyelid shapes (deprecated)", 1),
 ]
 
 forward_axis = [
@@ -86,8 +95,17 @@ classes = [
     rename_bones.BONE_OT_ConnectBones,
     rename_bones.BONE_OT_MergeBones,
 
-    operators.EYES_OT_CreateEyeDummies,
-    operators.EYES_OT_QCEyesPopup,
+    tools_panel.VIEW3D_PT_ToolsPanel,
+    tools_panel.VIEW3D_PT_ArmatureTools,
+    tools_panel.VIEW3D_PT_RenameTools,
+    tools_panel.VIEW3D_PT_TrasnferShapes,
+
+    # qc_eyes will have a dedicated section
+    qc_eyes.VALVE_PT_QcEyes,
+    qc_eyes.VALVE_OT_UpdateDepsGraphEyeDummies,
+    qc_eyes.VALVE_OT_CreateEyeDummies,
+    qc_eyes.VALVE_OT_QCEyesQCGenerator,
+    qc_eyes.VALVE_OT_QCEyesPopup,
 
     operators.BONES_OT_CleanBones,
     operators.BONES_OT_CleanBonesConstraints,
@@ -95,13 +113,6 @@ classes = [
     operators.BONES_OT_RenameChainPopup,
     operators.BONES_OT_QCEyesQCGenerator,
     operators.BONES_TP_CompareArmatures,
-
-    tools_panel.VIEW3D_PT_ToolsPanel,
-    tools_panel.VIEW3D_PT_QcEyes,
-    tools_panel.VIEW3D_PT_ArmatureTools,
-    tools_panel.VIEW3D_PT_RenameTools,
-    tools_panel.VIEW3D_PT_TrasnferShapes,
-
 
 
     IMAGE_MT_AlphaSplit
@@ -122,11 +133,21 @@ def register():
     bpy.types.Scene.RightEyeMat = bpy.props.StringProperty(name='Right Eye Material')
     bpy.types.Scene.NameFormat = bpy.props.EnumProperty(name="Name format", items=name_formats)
     bpy.types.Scene.BoneChains = bpy.props.EnumProperty(name="Bone chain", items=bone_chains)
-    bpy.types.Scene.EyesUp = bpy.props.FloatProperty(name="Up eyes max", min=0, max=360)
-    bpy.types.Scene.EyesDown = bpy.props.FloatProperty(name="Down eyes max", min=0, max=360)
-    bpy.types.Scene.EyesRight = bpy.props.FloatProperty(name="Right eyes max", min=0, max=360)
-    bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
-    bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
+    bpy.types.Scene.EyesUp = bpy.props.FloatProperty(description='Eyes Up / Down min value', name="min", min=-180, max=0)
+    bpy.types.Scene.EyesDown = bpy.props.FloatProperty(description='Eyes Up / Down max value', name="max", min=0, max=180)
+    bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(description='Eyes Left / Right min value', name="min", min=-180, max=0)
+    bpy.types.Scene.EyesRight = bpy.props.FloatProperty(description='Eyes Left / Right max value', name="max", min=0, max=180)
+    bpy.types.Scene.AngDev = bpy.props.FloatProperty(name='Deviation Angle', description="Angle of deviation from center", min=-50, max=50)
+
+    bpy.types.Scene.HeadObject = bpy.props.StringProperty(name='Object Name',description='Head Object name')
+    bpy.types.Scene.UpperLower = bpy.props.FloatProperty(name='Upper Lid Lowerer', description='DmxEyelid: Upper Lid Lowerer location')
+    bpy.types.Scene.UpperNeutral = bpy.props.FloatProperty(name='Upper Lid Neutral', description='DmxEyelid: Upper Lid Neutral location')
+    bpy.types.Scene.UpperRaiser = bpy.props.FloatProperty(name='Upper Lid Raiser', description='DmxEyelid: Upper Lid Raiser location')
+    bpy.types.Scene.LowerLowerer = bpy.props.FloatProperty(name='Lower Lid Lowerer', description='DmxEyelid: Lower Lid Lowerer location')
+    bpy.types.Scene.LowerNeutral = bpy.props.FloatProperty(name='Lower Lid Neutral', description='DmxEyelid: Lower Lid Neutral location')
+    bpy.types.Scene.LowerRaiser = bpy.props.FloatProperty(name='Lower Lid Raiser', description='DmxEyelid: Lower Lid Raiser location')
+
+    bpy.types.Scene.EyeFormats = bpy.props.EnumProperty(name="Eyelid Format", items=eyelid_format)
 
     bpy.types.Scene.ForwardAxis = bpy.props.EnumProperty(name="Forward axis", items=forward_axis)
     bpy.types.Scene.SplitPower = bpy.props.FloatProperty(name="Split power", min=0, max=1, default=0.995, precision=4)
@@ -151,7 +172,16 @@ def unregister():
     del bpy.types.Scene.EyesRight
     del bpy.types.Scene.EyesLeft
     del bpy.types.Scene.AngDev
+    del bpy.types.Scene.HeadObject
+    del bpy.types.Scene.UpperLower
+    del bpy.types.Scene.UpperNeutral
+    del bpy.types.Scene.UpperRaiser
+    del bpy.types.Scene.LowerLowerer
+    del bpy.types.Scene.LowerNeutral
+    del bpy.types.Scene.LowerRaiser
+    del bpy.types.Scene.EyeFormat
     del bpy.types.Scene.ForwardAxis
+    del bpy.types.Scene.SplitPower
     unregister_()
 
 

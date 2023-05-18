@@ -26,7 +26,7 @@ bl_info = {
     "location": "View3D > UI > Tool",
     "description": "Multi-purpose tools preparing armature for Source Engine export",
     'warning': '',
-    'wiki_url': 'https://github.com/REDxEYE/REDs-Tools/wiki',
+    'wiki_url': 'https://github.com/rEDxEYE/REDs-Tools/wiki',
     "category": "Tool"
 }
 
@@ -122,11 +122,11 @@ def register():
     bpy.types.Scene.RightEyeMat = bpy.props.StringProperty(name='Right Eye Material')
     #bpy.types.Scene.NameFormat = bpy.props.EnumProperty(name="Name format", items=name_formats)
     #bpy.types.Scene.BoneChains = bpy.props.EnumProperty(name="Bone chain", items=bone_chains)
-    bpy.types.Scene.EyesUp = bpy.props.FloatProperty(name="Up eyes max", min=0, max=360)
-    bpy.types.Scene.EyesDown = bpy.props.FloatProperty(name="Down eyes max", min=0, max=360)
-    bpy.types.Scene.EyesRight = bpy.props.FloatProperty(name="Right eyes max", min=0, max=360)
-    bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(name="Left eyes max", min=0, max=360)
-    bpy.types.Scene.AngDev = bpy.props.FloatProperty(name="Angle of deviation from center", min=-50, max=50)
+    bpy.types.Scene.EyesUp = bpy.props.FloatProperty(description='Eyes Up / Down min value', name="min", min=-180, max=0)
+    bpy.types.Scene.EyesDown = bpy.props.FloatProperty(description='Eyes Up / Down max value', name="max", min=0, max=180)
+    bpy.types.Scene.EyesLeft = bpy.props.FloatProperty(description='Eyes Left / Right max value', name="max", min=0, max=180)
+    bpy.types.Scene.EyesRight = bpy.props.FloatProperty(description='Eyes Left / Right min value', name="min", min=-180, max=0)
+    bpy.types.Scene.AngDev = bpy.props.FloatProperty(name='Deviation Angle', description="Angle of deviation from center", min=-50, max=50)
 
     bpy.types.Scene.HeadObject = bpy.props.StringProperty(name='Object Name',description='Head Object name')
     bpy.types.Scene.UpperLower = bpy.props.FloatProperty(name='Upper Lid Lowerer', description='DmxEyelid: Upper Lid Lowerer location')
@@ -169,6 +169,9 @@ def unregister():
     del bpy.types.Scene.LowerNeutral
     del bpy.types.Scene.LowerRaiser
     del bpy.types.Scene.EyeFormat
+
+    del bpy.types.Scene.ForwardAxis
+    del bpy.types.Scene.SplitPower
     unregister_()
 
 

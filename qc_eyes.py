@@ -1,8 +1,9 @@
 ##############################################################
 # Purpose:
-#   Mimica do qc_eyes.exe para Blender
+#   Mimic qc_eyes.exe in Blender
+#   also support the new DMX
 #
-#  por: Davi (Debiddo) Gooz
+#  by: Davi (Debiddo) Gooz
 ##############################################################
 import bpy
 from .tools_panel import View3DTools
@@ -30,8 +31,10 @@ class VALVE_PT_QcEyes(View3DTools, bpy.types.Panel):
         row.operator("valve.qc_eyes_create_dummies")
         row.operator("valve.qc_eyes_update")
         row = column.row(align=True)
-        row.operator("valve.qc_eyes_generate", text="Eyelid")
-        row.operator("valve.qc_eyes_generate", text="DmxEyelid")
+        row.prop(scn, 'EyeFormats')
+        row.operator("valve.qc_eyes_generate")
+        #row.operator("valve.qc_eyes_generate(eyelid=dmx)", text="Eyelid")
+        #row.operator("valve.qc_eyes_generate(eyelid=vta)", text="DmxEyelid")
         column.separator()
         if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
             row = column.row()
@@ -52,9 +55,9 @@ class VALVE_PT_QcEyes(View3DTools, bpy.types.Panel):
         row.prop(scn, 'EyesUp', text="")
         row.prop(scn, 'EyesDown', text="")
         row = column.row(align=True)
-        row.label(text="eyes_leftright")
-        row.prop(scn, 'EyesLeft', text="")
+        row.label(text="eyes_rightleft")
         row.prop(scn, 'EyesRight', text="")
+        row.prop(scn, 'EyesLeft', text="")
         column.separator()
         column.prop(scn, 'AngDev', text="Deviantion Angle")
         #if scn.HeadObject and bpy.data.objects[scn.HeadObject].type == "OBJECT":
@@ -103,38 +106,6 @@ def track_lowerer_eyelid_neutral(_):
 def track_lowerer_eyelid_raiser(_):
     obj = bpy.data.objects['VALVE_EYE_LOWER_LID_RAISER']
     bpy.context.scene.LowerRaiser = obj.location.z
-
-class VALVE_OT_UpdateDepsGraphEyeDummies(bpy.types.Operator):
-    '''This refresh graphs after a .blend file is reloaded or, when user try create new Eye Dummies'''
-    bl_idname = "valve.qc_eyes_update"
-    bl_label = "Update graph"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    def execute(self, context):
-        try:
-            bpy.ops.object.mode_set(mode='OBJECT')
-        except:
-            pass
-        if (
-            bpy.data.objects.get('VALVE_EYEDUMMY_L', None)
-            and bpy.data.objects.get('VALVE_EYEDUMMY_R', None)
-            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_LOWERER', None)
-            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_NEUTRAL', None)
-            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_RAISER', None)
-            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_LOWERER', None)
-            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_NEUTRAL', None)
-            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_RAISER', None)
-        ):
-            bpy.app.handlers.depsgraph_update_post.append(track_l_eye)
-            bpy.app.handlers.depsgraph_update_post.append(track_r_eye)
-            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_lower)
-            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_neutral)
-            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_raiser)
-            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_lower)
-            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_neutral)
-            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_raiser)
-            bpy.ops.valve.qc_eyes_popup('EXEC_DEFAULT')
-        return {'FINISHED'}
 
 def add_empty(name):
     bpy.ops.object.add(type='EMPTY')
@@ -211,15 +182,51 @@ class VALVE_OT_CreateEyeDummies(bpy.types.Operator):
             bpy.ops.valve.qc_eyes_popup('EXEC_DEFAULT')
         return {'FINISHED'}
 
-attachment_string = '$Attachment "{name}" "{p_bone}" {x} {y} {z} absolute\n'
+
+class VALVE_OT_UpdateDepsGraphEyeDummies(bpy.types.Operator):
+    '''This refresh graphs after a .blend file is reloaded or, when user try create new Eye Dummies'''
+    bl_idname = "valve.qc_eyes_update"
+    bl_label = "Update graph"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        try:
+            bpy.ops.object.mode_set(mode='OBJECT')
+        except:
+            pass
+        if (
+            bpy.data.objects.get('VALVE_EYEDUMMY_L', None)
+            and bpy.data.objects.get('VALVE_EYEDUMMY_R', None)
+            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_LOWERER', None)
+            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_NEUTRAL', None)
+            and bpy.data.objects.get('VALVE_EYE_UPPER_LID_RAISER', None)
+            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_LOWERER', None)
+            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_NEUTRAL', None)
+            and bpy.data.objects.get('VALVE_EYE_LOWER_LID_RAISER', None)
+        ):
+            bpy.app.handlers.depsgraph_update_post.append(track_l_eye)
+            bpy.app.handlers.depsgraph_update_post.append(track_r_eye)
+            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_lower)
+            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_neutral)
+            bpy.app.handlers.depsgraph_update_post.append(track_upper_eyelid_raiser)
+            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_lower)
+            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_neutral)
+            bpy.app.handlers.depsgraph_update_post.append(track_lowerer_eyelid_raiser)
+            bpy.ops.valve.qc_eyes_popup('EXEC_DEFAULT')
+        return {'FINISHED'}
+
+
+attachment_string = '$attachment "{name}" "{p_bone}" {x} {y} {z} absolute\n'
 eyeball_string = 'eyeball {eyeball_side} "{p_bone}" {x} {y} {z} "{mat_name}" {radius} {angle} "none" {size}\n'
-flexcont_string = 'flexcontroller eyes range -{angle1} {angle2} {fc_type}\n'
-dmxeyelid_string = 'DMXEyelid {eyelid_side} "{head_obj}" lowerer "{lower_shape}" {lid_pos1} neutral "{neutral_shape}" {lid_pos2} raiser "{raiser_shape}" {lid_pos3} righteyeball righteye lefteyeball lefteye\n'
+flexcont_string = 'flexcontroller eyes range {angle1} {angle2} {fc_type}\n'
+dmxeyelid_string = 'DMXEyelid {eyelid_side} "{head_obj}.dmx" lowerer "{lower_shape}" {lid_pos1} neutral "{neutral_shape}" {lid_pos2} raiser "{raiser_shape}" {lid_pos3} righteyeball righteye lefteyeball lefteye\n'
+eyelid_string = 'eyelid {eyelid_side} "{head_obj}.vta" lowerer "{lower_shape}" {lid_pos1} neutral "{neutral_shape}" {lid_pos2} raiser "{raiser_shape}" {lid_pos3} split {split} eyeball {attachment}\n'
+
 
 class VALVE_OT_QCEyesQCGenerator(bpy.types.Operator):
     '''write qc_eyes.qci file based on configuration'''
     bl_idname = "valve.qc_eyes_generate"
-    bl_label = "Generate QC string"
+    bl_label = "Generate QC"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -251,61 +258,116 @@ class VALVE_OT_QCEyesQCGenerator(bpy.types.Operator):
             p_bone = bpy.data.objects[str(arm)].data.bones[str(head_bone)]
 
         if eye_l and eye_r and upper_lid_pos1 and upper_lid_pos2 and upper_lid_pos3 and lower_lid_pos1 and lower_lid_pos2 and lower_lid_pos3:
-            if not bpy.data.texts.get("qc_eyes.qci", None):
+            if not bpy.data.texts.get('qc_eyes.qci', None):
                 qc_string = bpy.data.texts.new('qc_eyes.qci')
             else:
                 qc_string = bpy.data.texts['qc_eyes.qci']
-            qc_string.write(attachment_string.format(name="eyes",
+            qc_string.write(attachment_string.format(name='eyes',
                                                      p_bone=p_bone.name,
-                                                     x=abs(eye_r.location.x) - abs(eye_l.location.x),
-                                                     y=avg(eye_l.location.y, eye_r.location.y),
-                                                     z=avg(eye_l.location.z, eye_r.location.z)))
-            qc_string.write(attachment_string.format(name="righteye",
+                                                     x='{:.4f}'.format(abs(eye_r.location.x) - abs(eye_l.location.x)),
+                                                     y='{:.4f}'.format(avg(eye_l.location.y, eye_r.location.y)),
+                                                     z='{:.4f}'.format(avg(eye_l.location.z, eye_r.location.z))))
+            qc_string.write(attachment_string.format(name='righteye',
                                                      p_bone=p_bone.name,
-                                                     x=eye_r.location.x,
-                                                     y=eye_r.location.y,
-                                                     z=eye_r.location.z))
-            qc_string.write(attachment_string.format(name="lefteye",
+                                                     x='{:.4f}'.format(eye_r.location.x),
+                                                     y='{:.4f}'.format(eye_r.location.y),
+                                                     z='{:.4f}'.format(eye_r.location.z)))
+            qc_string.write(attachment_string.format(name='lefteye',
                                                      p_bone=p_bone.name,
-                                                     x=eye_l.location.x,
-                                                     y=eye_l.location.y,
-                                                     z=eye_l.location.z))
+                                                     x='{:.4f}'.format(eye_l.location.x),
+                                                     y='{:.4f}'.format(eye_l.location.y),
+                                                     z='{:.4f}'.format(eye_l.location.z)))
             qc_string.write('\n')
-            qc_string.write(eyeball_string.format(eyeball_side="righteye",
+            qc_string.write(eyeball_string.format(eyeball_side='righteye',
                                                   p_bone=p_bone.name,
-                                                  x=eye_r.location.x,
-                                                  y=eye_r.location.y,
-                                                  z=eye_r.location.z,
-                                                  radius=avg(eye_r.scale.x, eye_r.scale.y, eye_r.scale.z),
+                                                  x='{:.4f}'.format(eye_r.location.x),
+                                                  y='{:.4f}'.format(eye_r.location.y),
+                                                  z='{:.4f}'.format(eye_r.location.z),
+                                                  radius='{:.4f}'.format(avg(eye_r.scale.x, eye_r.scale.y, eye_r.scale.z)),
                                                   mat_name=bpy.context.scene.RightEyeMat,
                                                   angle=bpy.context.scene.AngDev,
-                                                  size=avg(eye_r.scale.x, eye_r.scale.y, eye_r.scale.z) * 0.5))
-            qc_string.write(eyeball_string.format(eyeball_side="lefteye",
+                                                  size='{:.4f}'.format(avg(eye_r.scale.x, eye_r.scale.y, eye_r.scale.z) * 0.5)))
+            qc_string.write(eyeball_string.format(eyeball_side='lefteye',
                                                   p_bone=p_bone.name,
-                                                  x=eye_l.location.x,
-                                                  y=eye_l.location.y,
-                                                  z=eye_l.location.z,
-                                                  radius=avg(eye_l.scale.x, eye_l.scale.y, eye_l.scale.z),
+                                                  x='{:.4f}'.format(eye_l.location.x),
+                                                  y='{:.4f}'.format(eye_l.location.y),
+                                                  z='{:.4f}'.format(eye_l.location.z),
+                                                  radius='{:.4f}'.format(avg(eye_l.scale.x, eye_l.scale.y, eye_l.scale.z)),
                                                   mat_name=bpy.context.scene.LeftEyeMat,
                                                   angle=-bpy.context.scene.AngDev,
-                                                  size=avg(eye_l.scale.x, eye_l.scale.y, eye_l.scale.z) * 0.5))
+                                                  size='{:.4f}'.format(avg(eye_l.scale.x, eye_l.scale.y, eye_l.scale.z) * 0.5)))
             qc_string.write('\n')
-            qc_string.write(dmxeyelid_string.format(eyelid_side="upper",
+
+            # TODO: select between DmxEyelid and Eyelid
+            # please try use dmxeyelid
+            formated_upper_lid_pos1='{:.4f}'.format(upper_lid_pos1.location.z - avg(eye_r.location.z, eye_l.location.z))
+            formated_upper_lid_pos2='{:.4f}'.format(upper_lid_pos2.location.z - avg(eye_r.location.z, eye_l.location.z))
+            formated_upper_lid_pos3='{:.4f}'.format(upper_lid_pos3.location.z - avg(eye_r.location.z, eye_l.location.z))
+            formated_lower_lid_pos1='{:.4f}'.format(lower_lid_pos1.location.z - avg(eye_r.location.z, eye_l.location.z))
+            formated_lower_lid_pos2='{:.4f}'.format(lower_lid_pos2.location.z - avg(eye_r.location.z, eye_l.location.z))
+            formated_lower_lid_pos3='{:.4f}'.format(lower_lid_pos3.location.z - avg(eye_r.location.z, eye_l.location.z))
+            if (bpy.context.scene.EyeFormats) == 'dmxeyelid':
+                qc_string.write(dmxeyelid_string.format(eyelid_side='upper',
+                                                        head_obj=head_obj.name,
+                                                        lower_shape='EM64', 
+                                                        neutral_shape='AU0', 
+                                                        raiser_shape='EM63',
+                                                        lid_pos1=formated_upper_lid_pos1,
+                                                        lid_pos2=formated_upper_lid_pos2,
+                                                        lid_pos3=formated_upper_lid_pos3))
+                qc_string.write(dmxeyelid_string.format(eyelid_side="lower",
+                                                        head_obj=head_obj.name,
+                                                        lower_shape='EM64', 
+                                                        neutral_shape='AU0', 
+                                                        raiser_shape='EM63',
+                                                        lid_pos1=formated_lower_lid_pos1,
+                                                        lid_pos2=formated_lower_lid_pos2,
+                                                        lid_pos3=formated_lower_lid_pos3))
+            elif (bpy.context.scene.EyeFormats) == 'eyelid':
+                qc_string.write(eyelid_string.format(eyelid_side='upper_right',
                                                     head_obj=head_obj.name,
-                                                    lower_shape='EM64', 
-                                                    neutral_shape='AU0', 
-                                                    raiser_shape='EM63',
-                                                    lid_pos1=upper_lid_pos1.location.z - avg(eye_r.location.z, eye_l.location.z),
-                                                    lid_pos2=upper_lid_pos2.location.z - avg(eye_r.location.z, eye_l.location.z),
-                                                    lid_pos3=upper_lid_pos3.location.z - avg(eye_r.location.z, eye_l.location.z)))
-            qc_string.write(dmxeyelid_string.format(eyelid_side="lower",
+                                                    lower_shape='1', 
+                                                    neutral_shape='0', 
+                                                    raiser_shape='2',
+                                                    split=0.1,
+                                                    attachment='righteye',
+                                                    lid_pos1=formated_upper_lid_pos1,
+                                                    lid_pos2=formated_upper_lid_pos2,
+                                                    lid_pos3=formated_upper_lid_pos3))
+                qc_string.write(eyelid_string.format(eyelid_side="lower_right",
                                                     head_obj=head_obj.name,
-                                                    lower_shape='EM64', 
-                                                    neutral_shape='AU0', 
-                                                    raiser_shape='EM63',
-                                                    lid_pos1=lower_lid_pos1.location.z - avg(eye_r.location.z, eye_l.location.z),
-                                                    lid_pos2=lower_lid_pos2.location.z - avg(eye_r.location.z, eye_l.location.z),
-                                                    lid_pos3=lower_lid_pos3.location.z - avg(eye_r.location.z, eye_l.location.z)))
+                                                    lower_shape='3', 
+                                                    neutral_shape='0', 
+                                                    raiser_shape='4',
+                                                    split=0.1,
+                                                    attachment='righteye',
+                                                    lid_pos1=formated_lower_lid_pos1,
+                                                    lid_pos2=formated_lower_lid_pos2,
+                                                    lid_pos3=formated_lower_lid_pos3))
+                qc_string.write(eyelid_string.format(eyelid_side="upper_left",
+                                                    head_obj=head_obj.name,
+                                                    lower_shape='1', 
+                                                    neutral_shape='0', 
+                                                    raiser_shape='2',
+                                                    split=0.1,
+                                                    attachment='lefteye',
+                                                    lid_pos1=formated_upper_lid_pos1,
+                                                    lid_pos2=formated_upper_lid_pos2,
+                                                    lid_pos3=formated_upper_lid_pos3))
+                qc_string.write(eyelid_string.format(eyelid_side="lower_left",
+                                                    head_obj=head_obj.name,
+                                                    lower_shape='3', 
+                                                    neutral_shape='0', 
+                                                    raiser_shape='4',
+                                                    split=0.1,
+                                                    attachment='lefteye',
+                                                    lid_pos1=formated_lower_lid_pos1,
+                                                    lid_pos2=formated_lower_lid_pos2,
+                                                    lid_pos3=formated_lower_lid_pos3))
+            else:
+                self.report({"ERROR"}, "something went wrong with eyelid setup")
+                return {'FINISHED'}
+
             qc_string.write('\n')
 
             qc_string.write(
@@ -344,6 +406,8 @@ class VALVE_OT_QCEyesPopup(bpy.types.Operator):
         col.label(text="Place both dummies where eyes supposed to be")
         col.separator()
         col.label(text="Apply eyes materials to them")
+        col.label(text="Remember to setup armature head object and which bone is the actual head")
+        col.separator()
         col.label(text="After all this trash click \"Generate QC\"")
 
     def execute(self, context):

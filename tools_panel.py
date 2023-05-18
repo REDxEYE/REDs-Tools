@@ -7,27 +7,31 @@ from .bone_table import bone_table_valvebiped, bone_table_bip
 
 class View3DTools:
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
+    bl_category = "Tool"
 
 
 # noinspection PyPep8Naming
 class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.panel'
-    bl_label = 'Source engine tools'
+    bl_idname = 'VALVE_PT_TOOLSPANEL'
+    bl_label = 'Source Engine tools'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         scn = context.scene
         layout = self.layout
         row = layout.row()
         row.label(text="Target armature")
-        row.prop_search(scn, "Armature", scn, "objects", text='')
+        row.prop_search(scn, "Armature", scn, "objects", text='', icon="ARMATURE_DATA")
+        row.label(text="Target Head")
+        row.prop_search(scn, "HeadObject", scn, "objects", text='', icon="OUTLINER_OB_MESH")
 
 
 # noinspection PyPep8Naming
 class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.rename_panel'
     bl_label = 'Renaming tools'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -52,7 +56,7 @@ class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
 class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.armature_panel'
     bl_label = 'Armature tools'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -82,49 +86,10 @@ class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
 
 
 # noinspection PyPep8Naming
-class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.qc_eye_panel'
-    bl_label = 'Qc eyes tools'
-    bl_parent_id = 'valve.panel'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        box = layout.box()
-        column = box.column(align=True)
-        column.operator("qceyes.popup")
-        column.separator()
-        column.operator("create.eyedummy")
-        column.operator("qceyes.generate_qc")
-        column.separator()
-        column = box.column()
-        column.prop(scn, 'LeftEye')
-        column.prop(scn, 'RightEye')
-        column.prop_search(scn, 'LeftEyeMat', bpy.data, 'materials')
-        column.prop_search(scn, 'RightEyeMat', bpy.data, 'materials')
-        row = column.row()
-        row.prop(scn, 'EyesUp')
-        row.prop(scn, 'EyesDown')
-        row = column.row()
-        row.prop(scn, 'EyesLeft')
-        row.prop(scn, 'EyesRight')
-        column.prop(scn, 'AngDev')
-        if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
-            row = column.row()
-            row.label(text="Head Bone")
-            row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
-
-
-# noinspection PyPep8Naming
 class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.shape_transfer'
     bl_label = 'Transfer shapes'
-    bl_parent_id = 'valve.panel'
+    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):

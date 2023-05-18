@@ -19,14 +19,14 @@ from . import clear_blank_shape_keys
 # from lists import *
 
 bl_info = {
-    "name": "Source Engine Tools",
+    "name": "Source Engine Toolkit",
     "author": "RED_EYE, Davi (Debiddo) Gooz",
     "version": (1, 5),
     "blender": (2, 80, 0),
     "location": "View3D > UI > Tool",
-    "description": "Multi-purpose tools for preparing armature for Source Engine export, derivated from the deprecated RED Tool's",
+    "description": "Multi-purpose tools preparing armature for Source Engine export",
     'warning': '',
-    'wiki_url': 'https://github.com/LoveRenamon/REDs-Tools/wiki',
+    'wiki_url': 'https://github.com/REDxEYE/REDs-Tools/wiki',
     "category": "Tool"
 }
 

@@ -82,45 +82,6 @@ class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
 
 
 # noinspection PyPep8Naming
-class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.qc_eye_panel'
-    bl_label = 'Qc eyes tools'
-    bl_parent_id = 'valve.panel'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        box = layout.box()
-        column = box.column(align=True)
-        column.operator("qceyes.popup")
-        column.separator()
-        column.operator("create.eyedummy")
-        column.operator("qceyes.generate_qc")
-        column.separator()
-        column = box.column()
-        column.prop(scn, 'LeftEye')
-        column.prop(scn, 'RightEye')
-        column.prop_search(scn, 'LeftEyeMat', bpy.data, 'materials')
-        column.prop_search(scn, 'RightEyeMat', bpy.data, 'materials')
-        row = column.row()
-        row.prop(scn, 'EyesUp')
-        row.prop(scn, 'EyesDown')
-        row = column.row()
-        row.prop(scn, 'EyesLeft')
-        row.prop(scn, 'EyesRight')
-        column.prop(scn, 'AngDev')
-        if scn.Armature and bpy.data.objects[scn.Armature].type == "ARMATURE":
-            row = column.row()
-            row.label(text="Head Bone")
-            row.prop_search(scn, "HeadBone", bpy.data.objects[scn.Armature].data, "bones", text="")
-
-
-# noinspection PyPep8Naming
 class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
     bl_idname = 'valve.shape_transfer'
     bl_label = 'Transfer shapes'

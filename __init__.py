@@ -30,7 +30,7 @@ bl_info = {
     "category": "Tool"
 }
 
-bone_dict = [ # Esse dici existe para selecionar qual dicionário para renomear bones
+bone_dict = [ # exists to select which active dict to rename bones
     ("blender_valve",    "Blender to ValveBiped",                      "Rename from: Blender\nto: ValveBiped Format", 0),
     ("valve_blender",    "ValveBiped to Blender",                      "Rename from: ValveBiped\nto: Blender Format", 1),
     ("dscs_to_blender",  "Digimon Story: CyberSleuth to Blender",      "Rename from: Digimon Story: CyberSleuth\nto: Blender Format", 2),
@@ -41,6 +41,10 @@ bone_dict = [ # Esse dici existe para selecionar qual dicionário para renomear 
     ("fortnite_blender", "Fortnite to Blender",                        "Rename from: Fortnite\nto: Blender Format", 7),
     ("tf2_blender",      "Team Fortress 2 to Blender",                 "Rename from: Team Fortress 2\nto: Blender Format", 8),
     ("bio3_tf2",         "Bioshock 3 to Team Fortress 2",              "Rename from: Bioshock 3\nto: Team Fortress 2 Format", 9),
+]
+eyelid_format = [
+    ("dmxeyelid", "DMX", "Use DMX file for eyelid shapes (recommended)", 0),
+    ("eyelid", "VTA", "Use VTA file for eyelid shapes (deprecated)", 1),
 ]
 forward_axis = [
     ("X", "X", "", 0),
@@ -71,18 +75,19 @@ classes = [
     #tools_panel.VALVE_PT_TrasnferShapes,
     #tools_panel.VALVE_PT_RenameTools,
 
-    # qc_eyes tem uma secção dedicada
+    # qc_eyes will have a dedicated section
     qc_eyes.VALVE_PT_QcEyes,
     qc_eyes.VALVE_OT_UpdateDepsGraphEyeDummies,
     qc_eyes.VALVE_OT_CreateEyeDummies,
     qc_eyes.VALVE_OT_QCEyesQCGenerator,
     qc_eyes.VALVE_OT_QCEyesPopup,
 
+    # aid selected armature and bones
     selected_bones.ARMATURE_OT_WeightBonesClipboard,
     selected_bones.ARMATURE_OT_SelectedBonesClipboard,
     selected_bones.ARMATURE_OT_SelectedBonesBonemergeClipboard,
 
-    # Isso é relacionado ao meu workflow pessoal
+    # This related to Debiddo's own personal workflow
     copy_pose.VALVE_OT_CopyPose,
     create_facs.VALVE_OT_CreateFACS,
     batch_smd_export.VALVE_OT_BatchExportActions,
@@ -92,13 +97,13 @@ classes = [
     empty_to_bones.ARMATURE_OT_empty_to_armature,
     clear_blank_shape_keys.MESH_OT_clear_blank_shape_keys,
 
+    # texture_tools
     #texture_tools.IMAGE_MT_AlphaSplit
 ]
 register_, unregister_ = bpy.utils.register_classes_factory(classes)
 
 
 def register():
-    #bpy.types.Scene.NameTemplate = bpy.props.StringProperty(name="", default='bip_bone_{1}')
     bpy.types.Scene.LeftEye = bpy.props.FloatVectorProperty(name="Left Eye")
     bpy.types.Scene.RightEye = bpy.props.FloatVectorProperty(name="Right Eye")
     bpy.types.Scene.Armature = bpy.props.StringProperty(
@@ -131,6 +136,8 @@ def register():
     bpy.types.Scene.LowerNeutral = bpy.props.FloatProperty(name='Lower Lid Neutral', description='DmxEyelid: Lower Lid Neutral location')
     bpy.types.Scene.LowerRaiser = bpy.props.FloatProperty(name='Lower Lid Raiser', description='DmxEyelid: Lower Lid Raiser location')
 
+    bpy.types.Scene.EyeFormats = bpy.props.EnumProperty(name="Eyelid Format", items=eyelid_format)
+
     bpy.types.Scene.ForwardAxis = bpy.props.EnumProperty(name="Forward axis", items=forward_axis)
     bpy.types.Scene.SplitPower = bpy.props.FloatProperty(name="Split power", min=0, max=1, default=0.995, precision=4)
 
@@ -140,7 +147,6 @@ def register():
 
 
 def unregister():
-    #del bpy.types.Scene.NameTemplate
     del bpy.types.Scene.LeftEye
     del bpy.types.Scene.RightEye
     del bpy.types.Scene.Armature
@@ -155,7 +161,6 @@ def unregister():
     del bpy.types.Scene.EyesRight
     del bpy.types.Scene.EyesLeft
     del bpy.types.Scene.AngDev
-    del bpy.types.Scene.ForwardAxis
     del bpy.types.Scene.HeadObject
     del bpy.types.Scene.UpperLower
     del bpy.types.Scene.UpperNeutral
@@ -163,6 +168,7 @@ def unregister():
     del bpy.types.Scene.LowerLowerer
     del bpy.types.Scene.LowerNeutral
     del bpy.types.Scene.LowerRaiser
+    del bpy.types.Scene.EyeFormat
     unregister_()
 
 

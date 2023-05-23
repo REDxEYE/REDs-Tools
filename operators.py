@@ -66,7 +66,7 @@ def close(a, b):
 
 
 def find_mirror_bone(ob, bone):
-    '''We don't care for names here, return bone object which have a X-Mirror aestetic'''
+    '''We don't care for names here, return bone object which have a X-Mirror aesthetic'''
     for o_bone in ob.pose.bones:
         if bone != o_bone and \
                 close(o_bone.head.x, (-1 * bone.head.x)) and \
@@ -85,7 +85,9 @@ def mirror_name(name):
 
 
 def bone_list_switch(case):
-    '''Seleciona e retorna o dicionário de bones com base na lista de imports'''
+    '''Select and return the bone dictionary from above imports
+
+    obs: I do know Python 3.11 support case switch statement, however this addon target support to 2.8x'''
     if case == "blender_valve":
         return blender_to_valvebiped
     if case == "valve_blender":
@@ -110,11 +112,13 @@ def bone_list_switch(case):
 
 
 def is_mode(a, b):
-    '''se objeto não estiver no modo {1}, o coloca no mode {2}'''
+    '''if object ins not on mode {1}, set the object into {2}'''
     if bpy.context.mode != a : bpy.ops.object.mode_set(mode=b)
 
 
 def set_mode(vm):
+    '''If mode_set not in vm, set mode_set vm'''
+    # cveats for ARMATURE
     if vm == 'EDIT_ARMATURE':
         bpy.ops.object.mode_set(mode='EDIT')
     else:
@@ -161,7 +165,7 @@ def vec_roll_to_mat3(vec, roll):
     target = Vector((0, 0.1, 0))
     nor = vec.normalized()
     axis = target.cross(nor)
-    if axis.dot(axis) > 0.0000000001: # this seems to be the problem for some bones, no idea how to fix
+    if axis.dot(axis) > 0.0000000001: # this seems to be the problem euler some bones, no idea how to fix
         axis.normalize()
         theta = target.angle(nor)
         bMatrix = Matrix.Rotation(theta, 3, axis)
@@ -176,93 +180,43 @@ def vec_roll_to_mat3(vec, roll):
 
 
 def hierarchy(child, parent):
-    '''Imitando o comando $hierarchy da Source Engine.\n
-    Faz o {1} ser filho de {2}'''
+    '''Mimics $hierarchy QC Command from Source Engine.\n
+    This makes {1} be child of {2}'''
     is_mode('EDIT_ARMATURE', 'EDIT')
     bone1 = get_edit_bone(child)
     bone2 = get_edit_bone(parent)
-    bone1.parent = bone2
-    #if not bone1.name == child:  print( "Child Bone " + bone1 + " not found, please set it up")
-    #if not bone2.name == parent: print("Parent Bone " + bone2 + " not found, please set it up")
+    if (bone1) and (bone2):
+        bone1.parent = bone2
 
 
 def helper(helper, parent):
-    ''''Isso já contém toda combinação de helper que uso'''
+    ''''This try make hierarchy using some obvious format styles'''
     h = 'Helper_'
     v = 'ValveBiped.Bip01_'
-    # Helpers
+    # Helpers format I often use
     hierarchy(h+helper+'_L', v+'L_'+parent)
     hierarchy(h+helper+'_R', v+'R_'+parent)
-    # Helpers que eu quase não uso
+    # Helpers which I often don't use
     hierarchy(h+'L_'+helper, v+'L_'+parent)
     hierarchy(h+'R_'+helper, v+'R_'+parent)
-    # ValveBiped Helpers
+    # ValveBiped-like format
     hierarchy(v+'L_'+helper, v+'L_'+parent)
     hierarchy(v+'R_'+helper, v+'R_'+parent)
 
 
-def valvebiped():
+def helperm(helper, parent):
+    ''''This try make hierarchy using some obvious format styles'''
+    h = 'Helper_'
     v = 'ValveBiped.Bip01_'
-    hierarchy(v+'Pelvis',     "")
-    hierarchy(v+'Spine',      v+'Pelvis')
-    hierarchy(v+'Spine1',     v+'Spine')
-    hierarchy(v+'Spine2',     v+'Spine1')
-    hierarchy(v+'Spine4',     v+'Spine2')
-    hierarchy(v+'Neck1',      v+'Spine4')
-    hierarchy(v+'Head1',      v+'Neck1')
-    hierarchy(v+'L_Clavicle', v+'Spine4')
-    hierarchy(v+'L_UpperArm', v+'L_Clavicle')
-    hierarchy(v+'L_Forearm',  v+'L_UpperArm')
-    hierarchy(v+'L_Hand',     v+'L_Forearm')
-    hierarchy(v+'R_Clavicle', v+'Spine4')
-    hierarchy(v+'R_UpperArm', v+'R_Clavicle')
-    hierarchy(v+'R_Forearm',  v+'R_UpperArm')
-    hierarchy(v+'R_Hand',     v+'R_Forearm')
-    hierarchy(v+'L_Thigh',    v+'Pelvis')
-    hierarchy(v+'L_Calf',     v+'L_Thigh')
-    hierarchy(v+'L_Foot',     v+'L_Calf')
-    hierarchy(v+'L_Toe',      v+'L_Foot')
-    hierarchy(v+'L_Toe0',     v+'L_Foot')
-    hierarchy(v+'L_Toe1',     v+'L_Foot')
-    hierarchy(v+'L_Toe2',     v+'L_Foot')
-    hierarchy(v+'L_Toe3',     v+'L_Foot')
-    hierarchy(v+'L_Toe4',     v+'L_Foot')
-    hierarchy(v+'R_Thigh',    v+'Pelvis')
-    hierarchy(v+'R_Calf',     v+'R_Thigh')
-    hierarchy(v+'R_Foot',     v+'R_Calf')
-    hierarchy(v+'R_Toe',      v+'R_Foot')
-    hierarchy(v+'R_Toe0',     v+'R_Foot')
-    hierarchy(v+'R_Toe1',     v+'R_Foot')
-    hierarchy(v+'R_Toe2',     v+'R_Foot')
-    hierarchy(v+'R_Toe3',     v+'R_Foot')
-    hierarchy(v+'R_Toe4',     v+'R_Foot')
-
-
-def procedurals():
-    hierarchy('Helper_Neck', 'ValveBiped.Bip01_Neck1')
-    hierarchy('Helper_Head', 'ValveBiped.Bip01_Head1')
-    helper('Latt', 'Spine2')
-    helper('Trapezius', 'Clavicle')
-    helper('Armor', 'UpperArm')
-    helper('Shoulder', 'UpperArm')
-    helper('UpperArm_twist', 'UpperArm')
-    helper('Bicep', 'UpperArm')
-    helper('Elbow', 'UpperArm')
-    helper('Ulna', 'Forearm')
-    helper('Wrist', 'Forearm')
-    helper('Thumb_root', 'Hand')
-    helper('Hip', 'Thigh')
-    helper('Hips', 'Thigh')
-    helper('Sartorius', 'Thigh')
-    helper('Quadricep', 'Thigh')
-    helper('Quad', 'Thigh')
-    helper('Knee', 'Thigh')
-    helper('Shin', 'Calf')
-    helper('Soleous', 'Calf')
-    helper('Ankle', 'Calf')
-    helper('Thumb', 'Foot')
-    helper('Pinky', 'Foot')
-    helper('Toe', 'Foot')
+    # Helpers format I often use
+    hierarchy(h+helper+'_L', v+parent)
+    hierarchy(h+helper+'_R', v+parent)
+    # Helpers which I often don't use
+    hierarchy(h+'L_'+helper, v+parent)
+    hierarchy(h+'R_'+helper, v+parent)
+    # ValveBiped-like format
+    hierarchy(v+'L_'+helper, v+parent)
+    hierarchy(v+'R_'+helper, v+parent)
 
 
 def toggle_material_nodes(bool=False):
@@ -377,7 +331,7 @@ class ARMATURE_OT_SetBoneViewMode(bpy.types.Operator):
 
         ob = context.active_object
 
-        select_bones_if_nothing()
+        select_bones_if_nothing
 
         for bone in context.selected_editable_bones:
             bone.envelope_distance = 6.0
@@ -396,7 +350,7 @@ class ARMATURE_OT_SetBoneViewMode(bpy.types.Operator):
         name = ob.name
         bpy.data.objects[name].display_type = 'WIRE'
         bpy.data.objects[name].show_in_front = True
-        a = bpy.data.armatures[name]
+        a = ob.data
         a.display_type = 'STICK'
         a.show_axes = True
         a.show_bone_custom_shapes = True
@@ -420,8 +374,101 @@ class ARMATURE_OT_SetBoneHierarchy(bpy.types.Operator):
         is_mode('EDIT_ARMATURE', 'EDIT')
 
         # TODO: adicionar um seletor.
-        valvebiped() # (?)
-        procedurals() # (?)
+        # ValveBiped Hierarchy
+        v = 'ValveBiped.Bip01_'
+        hierarchy(v+'Pelvis', "")
+        hierarchy(v+'Spine', v+'Pelvis')
+        hierarchy(v+'Spine1', v+'Spine')
+        hierarchy(v+'Spine2', v+'Spine1')
+        hierarchy(v+'Spine4', v+'Spine2')
+        hierarchy(v+'Neck1', v+'Spine4')
+        hierarchy(v+'Head1', v+'Neck1')
+        hierarchy(v+'L_Clavicle', v+'Spine4')
+        hierarchy(v+'L_UpperArm', v+'L_Clavicle')
+        hierarchy(v+'L_Forearm', v+'L_UpperArm')
+        hierarchy(v+'L_Hand', v+'L_Forearm')
+
+        hierarchy(v+'L_Finger0', v+'L_Hand')
+        hierarchy(v+'L_Finger01', v+'L_Finger0')
+        hierarchy(v+'L_Finger02', v+'L_Finger01')
+        hierarchy(v+'L_Finger1', v+'L_Hand')
+        hierarchy(v+'L_Finger11', v+'L_Finger1')
+        hierarchy(v+'L_Finger12', v+'L_Finger11')
+        hierarchy(v+'L_Finger2', v+'L_Hand')
+        hierarchy(v+'L_Finger21', v+'L_Finger2')
+        hierarchy(v+'L_Finger22', v+'L_Finger21')
+        hierarchy(v+'L_Finger3', v+'L_Hand')
+        hierarchy(v+'L_Finger31', v+'L_Finger3')
+        hierarchy(v+'L_Finger32', v+'L_Finger31')
+        hierarchy(v+'L_Finger4', v+'L_Hand')
+        hierarchy(v+'L_Finger41', v+'L_Finger4')
+        hierarchy(v+'L_Finger42', v+'L_Finger41')
+
+        hierarchy(v+'R_Clavicle', v+'Spine4')
+        hierarchy(v+'R_UpperArm', v+'R_Clavicle')
+        hierarchy(v+'R_Forearm', v+'R_UpperArm')
+        hierarchy(v+'R_Hand', v+'R_Forearm')
+
+        hierarchy(v+'R_Finger0', v+'R_Hand')
+        hierarchy(v+'R_Finger01', v+'R_Finger0')
+        hierarchy(v+'R_Finger02', v+'R_Finger01')
+        hierarchy(v+'R_Finger1', v+'R_Hand')
+        hierarchy(v+'R_Finger11', v+'R_Finger1')
+        hierarchy(v+'R_Finger12', v+'R_Finger11')
+        hierarchy(v+'R_Finger2', v+'R_Hand')
+        hierarchy(v+'R_Finger21', v+'R_Finger2')
+        hierarchy(v+'R_Finger22', v+'R_Finger21')
+        hierarchy(v+'R_Finger3', v+'R_Hand')
+        hierarchy(v+'R_Finger31', v+'R_Finger3')
+        hierarchy(v+'R_Finger32', v+'R_Finger31')
+        hierarchy(v+'R_Finger4', v+'R_Hand')
+        hierarchy(v+'R_Finger41', v+'R_Finger4')
+        hierarchy(v+'R_Finger42', v+'R_Finger41')
+
+        hierarchy(v+'L_Thigh', v+'Pelvis')
+        hierarchy(v+'L_Calf', v+'L_Thigh')
+        hierarchy(v+'L_Foot', v+'L_Calf')
+        hierarchy(v+'L_Toe', v+'L_Foot')
+        hierarchy(v+'L_Toe0', v+'L_Foot')
+        hierarchy(v+'L_Toe1', v+'L_Foot')
+        hierarchy(v+'L_Toe2', v+'L_Foot')
+        hierarchy(v+'L_Toe3', v+'L_Foot')
+        hierarchy(v+'L_Toe4', v+'L_Foot')
+        hierarchy(v+'R_Thigh', v+'Pelvis')
+        hierarchy(v+'R_Calf', v+'R_Thigh')
+        hierarchy(v+'R_Foot', v+'R_Calf')
+        hierarchy(v+'R_Toe', v+'R_Foot')
+        hierarchy(v+'R_Toe0', v+'R_Foot')
+        hierarchy(v+'R_Toe1', v+'R_Foot')
+        hierarchy(v+'R_Toe2', v+'R_Foot')
+        hierarchy(v+'R_Toe3', v+'R_Foot')
+        hierarchy(v+'R_Toe4', v+'R_Foot')
+
+        # usual Helpers / Procedural hierarchy
+        hierarchy('Helper_Neck', 'ValveBiped.Bip01_Neck1')
+        hierarchy('Helper_Head', 'ValveBiped.Bip01_Head1')
+        helperm('Latt', 'Spine2')
+        helper('Trapezius', 'Clavicle')
+        helper('Armor', 'UpperArm')
+        helper('Shoulder', 'UpperArm')
+        helper('UpperArm_twist', 'UpperArm')
+        helper('Bicep', 'UpperArm')
+        helper('Elbow', 'UpperArm')
+        helper('Ulna', 'Forearm')
+        helper('Wrist', 'Forearm')
+        helper('Thumb_root', 'Hand')
+        helper('Hip', 'Thigh')
+        helper('Hips', 'Thigh')
+        helper('Sartorius', 'Thigh')
+        helper('Quadricep', 'Thigh')
+        helper('Quad', 'Thigh')
+        helper('Knee', 'Thigh')
+        helper('Shin', 'Calf')
+        helper('Soleous', 'Calf')
+        helper('Ankle', 'Calf')
+        helper('Thumb', 'Foot')
+        helper('Pinky', 'Foot')
+        helper('Toe', 'Foot')
 
         set_mode(vm)
 
@@ -429,7 +476,7 @@ class ARMATURE_OT_SetBoneHierarchy(bpy.types.Operator):
 
 
 class VALVE_OT_ConnectBones(bpy.types.Operator):
-    """Conect all detached bones to it child following the constraint."""
+    """Conect all detached bones to it child following the constraint"""
     bl_idname = "valve.armature_connect"
     bl_label = "Connect bones"
 

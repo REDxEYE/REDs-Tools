@@ -67,6 +67,7 @@ classes = [
     operators.ARMATURE_OT_LockBoneLocation,
     operators.ARMATURE_OT_SetBoneViewMode,
     operators.ARMATURE_OT_SetBoneHierarchy,
+    operators.MESH_OT_MirrorValveBiped,
 
     tools_panel.VALVE_PT_ToolsPanel,
     tools_panel.VALVE_PT_MeshTools,

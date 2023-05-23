@@ -683,3 +683,59 @@ class BONES_TP_CompareArmatures(bpy.types.Operator):
 
         return {'FINISHED'}
 '''
+
+class MESH_OT_MirrorValveBiped(bpy.types.Operator):
+    """Mirrors Active Object Vertex Groups names.
+    It attempt use Blender, ValveBiped.Bip01_, bip_ and Maya friendly names"""
+    bl_idname = "valve.vertex_groups_mirror"
+    bl_label = "Mirror Vertex Groups"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
+
+    def execute(self, context):
+
+        # Acess the active object
+        obj = context.active_object
+
+        # ValveBiped pattern
+        v='ValveBiped.Bip01_'
+
+        if obj is not None:
+            # Access the vertex groups
+            vertex_groups = obj.vertex_groups
+
+            # Iterate over the vertex groups and rename them
+            for vg in vertex_groups:
+                # rename based on ValveBiped, the underscore is just a failsafe for
+                if vg.name.startswith(v+'R_'):
+                    new_name = vg.name.replace(v+'R_', v+'L_')
+                    vg.name = new_name
+                elif vg.name.startswith(v+'L_'):
+                    new_name = vg.name.replace(v+'L_', v+'R_')
+                    vg.name = new_name
+                # in case is blender friendly
+                elif vg.name.endswith('_L'):
+                    new_name = vg.name.replace('_L', '_R')
+                    vg.name = new_name
+                elif vg.name.endswith('_R'):
+                    new_name = vg.name.replace('_R', '_L')
+                    vg.name = new_name
+                # in case is blender friendly
+                elif vg.name.startswith('L_'):
+                    new_name = vg.name.replace('L_', 'R_')
+                    vg.name = new_name
+                elif vg.name.startswith('R_'):
+                    new_name = vg.name.replace('R_', 'L_')
+                    vg.name = new_name
+                # in case maya friendly
+                elif vg.name.startswith(' L '):
+                    new_name = vg.name.replace(' L ', ' R ')
+                    vg.name = new_name
+                elif vg.name.startswith(' R '):
+                    new_name = vg.name.replace(' R ', ' L ')
+                    vg.name = new_name
+        return {'FINISHED'}
+

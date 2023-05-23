@@ -168,7 +168,7 @@ def unregister():
     del bpy.types.Scene.LowerLowerer
     del bpy.types.Scene.LowerNeutral
     del bpy.types.Scene.LowerRaiser
-    del bpy.types.Scene.EyeFormat
+    del bpy.types.Scene.EyeFormats
 
     del bpy.types.Scene.ForwardAxis
     del bpy.types.Scene.SplitPower

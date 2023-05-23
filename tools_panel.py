@@ -12,7 +12,7 @@ class View3DTools:
 
 
 class VALVE_PT_ToolsPanel(View3DTools, bpy.types.Panel):
-    """Control which Armature and Object we'll work on"""
+    """Master Control for all bellow tools"""
     bl_idname = 'VALVE_PT_TOOLSPANEL'
     bl_label = 'Source Engine tools'
     bl_options = {'DEFAULT_CLOSED'}
@@ -74,14 +74,15 @@ class VALVE_PT_ArmatureTools(View3DTools, bpy.types.Panel):
         row.operator('valve.weighted_bones_to_clipboard')
         row.operator('valve.selected_bones_to_clipboard')
         row.operator('valve.bonemerge_to_clipboard')
+        
+        # in case SourceOps is present enable this
+        '''row.label(text="Procedurals:")
         row = col.row(align=True)
-        #row.label(text="Procedurals:")
-        #row = col.row(align=True)
         SourceOps, _ = addon_utils.check("SourceOps")
         if SourceOps:
-        #    row.operator('sourceops.pose_bone_transforms(type="TRANSLATION")', text="Relative Location")
-        #    row.operator('sourceops.pose_bone_transforms(type="ROTATION")', text="Relative Rotaion")
-            col.operator('valve.proceduralbone')
+            row.operator('sourceops.pose_bone_transforms(type="TRANSLATION")', text="Relative Location")
+            row.operator('sourceops.pose_bone_transforms(type="ROTATION")', text="Relative Rotaion")
+            col.operator('valve.proceduralbone')'''
 
         row = col.row(align=True)
         row.prop(scn, 'BoneList')

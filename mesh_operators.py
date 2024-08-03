@@ -137,10 +137,81 @@ class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
         balance = src_vertices[:, axis_id]
         balance = np.clip((-balance / balance_width / 2) + 0.5, 0, 1)
 
-        weight_group = source.vertex_groups.get('__BALANCE_L',None) or source.vertex_groups.new(name='__BALANCE_L')
+        weight_group = source.vertex_groups.get('__BALANCE_L', None) or source.vertex_groups.new(name='__BALANCE_L')
         for n, v in enumerate(balance):
             weight_group.add([n], v, 'REPLACE')
         weight_group = source.vertex_groups.get('__BALANCE_R', None) or source.vertex_groups.new(name='__BALANCE_R')
         for n, v in enumerate(balance):
-            weight_group.add([n], 1-v, 'REPLACE')
+            weight_group.add([n], 1 - v, 'REPLACE')
+        return {'FINISHED'}
+
+
+class SHAPE_KEY_OT_CreateCorrectorShapeKey(bpy.types.Operator):
+    bl_idname = "red_utils.create_corrector_shapekey"
+    bl_label = "Create a corrector shape key"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+
+        selected_shape_keys = [key.name for key in obj.data.shape_keys.key_blocks if key.value != 0]
+
+        if len(selected_shape_keys) < 2:
+            self.report({"ERROR"}, "Please select at least two shape keys.")
+            return {'ERROR'}
+
+        new_shape_key_name = "_".join(selected_shape_keys)
+        new_shape_key = obj.shape_key_add(name=new_shape_key_name, from_mix=True)
+        for key in selected_shape_keys:
+            obj.data.shape_keys.key_blocks[key].value = 0.0
+        new_shape_key.value = 1.0
+        obj.active_shape_key_index = obj.data.shape_keys.key_blocks.find(new_shape_key.name)
+        return {'FINISHED'}
+
+
+class SHAPE_KEY_OT_ShapeKeyToRelative(bpy.types.Operator):
+    bl_idname = "red_utils.shapekey_to_relative"
+    bl_label = "Convert corrective shape key to relative"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+
+        full_corrective = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        mesh_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        obj.data.vertices.foreach_get('co', mesh_vertices)
+        shape_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        for shape_key in obj.data.shape_keys.key_blocks:
+            if "_" in shape_key.name and not shape_key.name.startswith("_") and not shape_key.name.endswith("_"):
+                shape_key.data.foreach_get('co', full_corrective)
+                parts = shape_key.name.split("_")
+                for part in parts:
+                    part_shape_key = obj.data.shape_keys.key_blocks[part]
+                    part_shape_key.data.foreach_get('co', shape_vertices)
+                    full_corrective += mesh_vertices - shape_vertices
+                shape_key.data.foreach_set('co', full_corrective)
+        return {'FINISHED'}
+
+
+class SHAPE_KEY_OT_ShapeKeyToAbsolute(bpy.types.Operator):
+    bl_idname = "red_utils.shapekey_to_absolute"
+    bl_label = "Convert corrective shape key to absolute"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+
+        full_corrective = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        mesh_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        obj.data.vertices.foreach_get('co', mesh_vertices)
+        shape_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32)
+        for shape_key in obj.data.shape_keys.key_blocks:
+            if "_" in shape_key.name and not shape_key.name.startswith("_") and not shape_key.name.endswith("_"):
+                shape_key.data.foreach_get('co', full_corrective)
+                parts = shape_key.name.split("_")
+                for part in parts:
+                    part_shape_key = obj.data.shape_keys.key_blocks[part]
+                    part_shape_key.data.foreach_get('co', shape_vertices)
+                    full_corrective -= (mesh_vertices - shape_vertices)
+                shape_key.data.foreach_set('co', full_corrective)
         return {'FINISHED'}

@@ -78,6 +78,9 @@ classes = [
     mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
     mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
     mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
+    mesh_operators.SHAPE_KEY_OT_CreateCorrectorShapeKey,
+    mesh_operators.SHAPE_KEY_OT_ShapeKeyToAbsolute,
+    mesh_operators.SHAPE_KEY_OT_ShapeKeyToRelative,
 
     rename_bones.BONE_OT_RenameButtonBip,
     rename_bones.BONE_OT_RenameButtonValveBiped,
@@ -100,8 +103,7 @@ classes = [
     tools_panel.VIEW3D_PT_QcEyes,
     tools_panel.VIEW3D_PT_ArmatureTools,
     tools_panel.VIEW3D_PT_RenameTools,
-    tools_panel.VIEW3D_PT_TrasnferShapes,
-
+    tools_panel.VIEW3D_PT_ShapesKeyTools,
 
 
     IMAGE_MT_AlphaSplit

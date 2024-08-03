@@ -1,13 +1,9 @@
 import bpy
 
-from bpy.props import *
-
-from .bone_table import bone_table_valvebiped, bone_table_bip
-
 
 class View3DTools:
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
 
 
 # noinspection PyPep8Naming
@@ -121,9 +117,9 @@ class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
 
 
 # noinspection PyPep8Naming
-class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.shape_transfer'
-    bl_label = 'Transfer shapes'
+class VIEW3D_PT_ShapesKeyTools(View3DTools, bpy.types.Panel):
+    bl_idname = 'valve.shape_tools'
+    bl_label = 'Shape key tools'
     bl_parent_id = 'valve.panel'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -141,3 +137,9 @@ class VIEW3D_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
         box.prop(scn, 'ForwardAxis')
         box.prop(scn, 'SplitPower')
         box.operator('red_utils.create_stereo_split')
+        box = layout.box()
+        box.operator('red_utils.create_corrector_shapekey')
+        box.label(text="Relative <-> Absolute")
+        row = box.row()
+        row.operator('red_utils.shapekey_to_relative', text="To relative")
+        row.operator('red_utils.shapekey_to_absolute', text="To absolute")

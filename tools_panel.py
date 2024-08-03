@@ -125,11 +125,25 @@ class VALVE_PT_MeshTools(View3DTools, bpy.types.Panel):
 
         row = col.row(align=True)
         row.operator('valve.createfacs')
-        row.operator('valve.createfacs', text="Create Corrective Shapes")
+        row.operator('valve.create_corrective_shapes', text="Create Corrective Shapes")
         bst, _ = addon_utils.check("io_scene_valvesource")
         if bst:
             col.operator('object.sourcetools_generate_corrective_drivers', text="Create Corrective Drivers")
         row.operator('mesh.clear_blank_shape_keys')
+
+        layout.operator('red_utils.transfer_shapes')
+        layout.operator('red_utils.bake_shape_ranges')
+        layout.operator('red_utils.bake_shape')
+        box = layout.box()
+        box.prop(scn, 'ForwardAxis')
+        box.prop(scn, 'SplitPower')
+        box.operator('red_utils.create_stereo_split')
+        box = layout.box()
+        box.operator('red_utils.create_corrector_shapekey')
+        box.label(text="Relative <-> Absolute")
+        row = box.row()
+        row.operator('red_utils.shapekey_to_relative', text="To relative")
+        row.operator('red_utils.shapekey_to_absolute', text="To absolute")
 
 '''
 class VALVE_PT_TextureTools(View3DTools, bpy.types.Panel):
@@ -154,50 +168,4 @@ class VALVE_PT_TextureTools(View3DTools, bpy.types.Panel):
         row = col.row(align=True)
 
         row.operator("alpha.split")
-'''
-'''
-class VALVE_PT_TrasnferShapes(View3DTools, bpy.types.Panel):
-    bl_idname = 'valve.shape_transfer'
-    bl_label = 'Transfer shapes'
-    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.operator('red_utils.transfer_shapes')
-        layout.operator('red_utils.bake_shape_ranges')
-        layout.operator('red_utils.bake_shape')
-        box = layout.box()
-        box.prop(scn, 'ForwardAxis')
-        box.prop(scn, 'SplitPower')
-        box.operator('red_utils.create_stereo_split')
-'''
-'''
-class VALVE_PT_RenameTools(View3DTools, bpy.types.Panel):
-    #bl_idname = 'valve.rename_panel'
-    bl_label = 'Renaming tools'
-    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.label(text="Rename tools")
-        box = layout.box()
-        box.operator("valve.renamechainpopup")
-        box.separator()
-        box.label(text='Choose name format')
-        box.prop(scn, 'NameFormat')
-        box.separator()
-        box.prop(scn, 'BoneChains')
-        box.operator('valve.renamebonechain')
 '''

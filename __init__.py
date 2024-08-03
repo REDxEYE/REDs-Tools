@@ -5,7 +5,7 @@ import bpy
 #from . import texture_tools
 from . import tools_panel
 from . import operators
-#from . import mesh_operators
+from . import mesh_operators
 from . import selected_bones
 from . import create_facs
 from . import copy_pose
@@ -54,10 +54,13 @@ forward_axis = [
 
 
 classes = [
-    # mesh_operators.SHAPE_KEYS_OT_TransferShapes,
-    # mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
-    # mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
-    # mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
+    mesh_operators.SHAPE_KEYS_OT_TransferShapes,
+    mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
+    mesh_operators.SHAPE_KEY_OT_BakeShapeKeyModifiers,
+    mesh_operators.SHAPE_KEY_OT_CreateStereoSplit,
+    mesh_operators.SHAPE_KEY_OT_CreateCorrectorShapeKey,
+    mesh_operators.SHAPE_KEY_OT_ShapeKeyToAbsolute,
+    mesh_operators.SHAPE_KEY_OT_ShapeKeyToRelative,
 
     operators.VALVE_OT_ConnectBones,
     operators.VALVE_OT_MergeBoneWeights,
@@ -72,9 +75,13 @@ classes = [
     tools_panel.VALVE_PT_ToolsPanel,
     tools_panel.VALVE_PT_MeshTools,
     tools_panel.VALVE_PT_ArmatureTools,
-    #tools_panel.VALVE_PT_TextureTools,
-    #tools_panel.VALVE_PT_TrasnferShapes,
-    #tools_panel.VALVE_PT_RenameTools,
+    tools_panel.VALVE_PT_TextureTools,
+    tools_panel.VALVE_PT_TrasnferShapes,
+    tools_panel.VALVE_PT_RenameTools,
+    tools_panel.VIEW3D_PT_ToolsPanel,
+    tools_panel.VIEW3D_PT_ArmatureTools,
+    tools_panel.VIEW3D_PT_RenameTools,
+    tools_panel.VIEW3D_PT_ShapesKeyTools,
 
     # qc_eyes will have a dedicated section
     qc_eyes.VALVE_PT_QcEyes,

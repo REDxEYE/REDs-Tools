@@ -61,7 +61,7 @@ class SHAPE_KEYS_OT_BakeShapeKey(bpy.types.Operator):
         delta = src_shape_vertices - dst_vertices
         shape.data.foreach_set("co", dst_vertices + (delta * val_max))
 
-        shape = target.shape_key_add(name=shape_key.name + f"_m in({val_min})")
+        shape = target.shape_key_add(name=shape_key.name + f"_min({val_min})")
         delta = src_shape_vertices - dst_vertices
         shape.data.foreach_set("co", dst_vertices + (delta * val_min))
 

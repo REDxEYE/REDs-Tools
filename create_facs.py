@@ -1,7 +1,28 @@
 ##############################################################
 # Purpose:
 #   Criar Shape Keys que são necessários para FACS.dmx
-#   Essa é a lista de FACS necessários para uso desse repo
+#   Essa é a lista de FACS necessários para uso desse repo.
+#
+# Notas:
+#   Cada FAC com sufixo Z deve ser interpretado como sufixo "E".
+#   O correto seria usar sufixo "E", mas, a Valve usou "Z" no lugar
+#   Então, para cada FAC onde sufixo originalmente seria:
+#     A  == Intensidade Mínima
+#     B  == Intensidade Sutil
+#     C  == Intensidade Moderada
+#     D  == Intensidade Forte
+#     E  == Intensidade Máxima
+#
+#   Nesse repositório interprete como:
+#     L  == Somente Lado Esquerdo
+#     R  == Somente Lado Direito
+#     U  == Somente Lado Superior
+#     D  == Somente Lado Inferior
+#     SL == Movimenta ambos lados para Esquerda
+#     SR == Movimenta ambos lados para Direita
+#     SU == Movimenta ambos lados para Cima
+#     SD == Movimenta ambos lados para Baixo
+#     Z  == Extrema Intensidade
 #
 #  por: Davi (Debiddo) Gooz
 ##############################################################
@@ -28,6 +49,7 @@ FACS = [
  "AU5",      # upper_lid_raiser
  "AU6",      # cheek_raiser
  "AU7",      # lid_tightener
+#"AU8",      # howler_mouth
  "AU9",      # nose_wrinkler
  "AU10",     # sneer
 #"AU10SR",   # sneer_sideway
@@ -43,17 +65,18 @@ FACS = [
  "AU17D",    # chin_raiser
  "AU18",     # lip_pucker
  "AU18Z",    # lip_pucker
+#"AU19",     # tongue_exposition (any TM1XX FACs)
  "AU20",     # lip_stretcher
 #"NC21",     # neck_tightener / Platysma
  "AU22",     # lip_funneler
- "AU22Z",    # lip_funneler
+ "AU22Z",    # lip_funneler_extreme
 #"AU23",     # lip_tightener
  "AU24",     # lip_pressor
  "AU25",     # lip_part
  "AU26",     # jaw_drop
  "AU26Z",    # jaw_drop
  "AU27",     # mouth_stretch
- "AU27Z",    # mouth_stretch
+ "AU27Z",    # mouth_stretch_extreme
  "AU28",     # lip_suck
 #"AD29",     # jaw_front
 #"AD29B",    # jaw_back
@@ -64,6 +87,8 @@ FACS = [
 #"AD33",     # lip_blow
 #"AD34",     # lip_snort
 #"AD35",     # cheek_suck
+#"AU36",     # fac_name
+#"AU37",     # fac_name
  "AU38",     # dilator / nose_dilator
 #"AU39",     # contract / nose_contract
 #"GB40",     # sniff

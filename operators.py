@@ -6,20 +6,9 @@ from bpy.props import *
 
 #from .bone_table import bone_table_valvebiped, bone_table_bip
 
-from .rename_dicts.bio3_to_tf2 import names as bio3_to_tf2
-from .rename_dicts.valvebiped_to_blender import names as valvebiped_to_blender
-from .rename_dicts.tf2_to_blender import names as tf2_to_blender
-from .rename_dicts.rxd_blender import names as rxd_to_blender
-from .rename_dicts.rigfy_to_blender import names as rigfy_to_blender
-from .rename_dicts.mmd_to_valvebiped import names as mmd_to_valvebiped
-from .rename_dicts.kofas_blender import names as kofas_to_blender
-from .rename_dicts.fortnite_to_blender import names as fortnite_to_blender
-from .rename_dicts.cybersleuth_to_blender import names as cybersleuth_to_blender
-from .rename_dicts.blender_to_valvebiped import names as blender_to_valvebiped
-
 
 def enable_if(context, is_mode):
-    '''return True if active object is in is_mode'''
+    '''return True if active object mode match is_mode'''
     return context.active_object and context.active_object.type == is_mode
 
 
@@ -87,27 +76,29 @@ def mirror_name(name):
 def bone_list_switch(case):
     '''Select and return the bone dictionary from above imports
 
-    obs: I do know Python 3.11 support case switch statement, however this addon target support to 2.8x'''
+    NOTE: I do know Python 3.11 support case switch statement, however this addon target support Blender 2.8x'''
     if case == "blender_valve":
-        return blender_to_valvebiped
+        from .rename_dicts.bio3_to_tf2 import names
     if case == "valve_blender":
-        return valvebiped_to_blender
+        from .rename_dicts.valvebiped_to_blender import names
     if case == "dscs_to_blender":
-        return cybersleuth_to_blender
+        from .rename_dicts.tf2_to_blender import names
     if case == "rxd_blender":
-        return rxd_to_blender
+        from .rename_dicts.rxd_blender import names
     if case == "rigfy_blender":
-        return rigfy_to_blender
+        from .rename_dicts.rigfy_to_blender import names
     if case == "mmd_valvebiped":
-        return mmd_to_valvebiped
+        from .rename_dicts.mmd_to_valvebiped import names
     if case == "kofas_blender":
-        return kofas_to_blender
+        from .rename_dicts.kofas_blender import names
     if case == "fortnite_blender":
-        return fortnite_to_blender
+        from .rename_dicts.fortnite_to_blender import names
     if case == "tf2_blender":
-        return tf2_to_blender
+        from .rename_dicts.cybersleuth_to_blender import names
     if case == "bio3_tf2":
-        return bio3_to_tf2
+        from .rename_dicts.blender_to_valvebiped import names
+    if names is not None:
+        return names
     print("[ERROR]: The list used by bone_list_switch() doesn't exist")
 
 
@@ -118,6 +109,7 @@ def is_mode(a, b):
 
 def set_mode(vm):
     '''If mode_set not in vm, set mode_set vm'''
+    if bpy.context.mode == vm : return
     # cveats for ARMATURE
     if vm == 'EDIT_ARMATURE':
         bpy.ops.object.mode_set(mode='EDIT')
@@ -190,7 +182,7 @@ def hierarchy(child, parent):
 
 
 def helper(helper, parent):
-    ''''This try make hierarchy using some obvious format styles'''
+    ''''try make a stereo hierarchy using some obvious format styles'''
     h = 'Helper_'
     v = 'ValveBiped.Bip01_'
     # Helpers format I often use
@@ -205,7 +197,7 @@ def helper(helper, parent):
 
 
 def helperm(helper, parent):
-    ''''This try make hierarchy using some obvious format styles'''
+    ''''try make a mono hierarchy using some obvious format styles'''
     h = 'Helper_'
     v = 'ValveBiped.Bip01_'
     # Helpers format I often use
@@ -224,6 +216,14 @@ def toggle_material_nodes(bool=False):
        EachMaterial.use_nodes = bool
 
 
+def create_vertex_group(Name):
+    '''create blank vertex groups in case doesn't exist'''
+    c = bpy.context.active_object
+    vg = c.vertex_groups.get(Name)
+    if vg is None:
+        c.vertex_groups.new(name=Name)
+
+
 class VALVE_OT_CleanBonesShape(bpy.types.Operator):
     """Remove custom shapes for selected bones"""
     bl_idname = "valve.bones_shape_clear"
@@ -234,7 +234,7 @@ class VALVE_OT_CleanBonesShape(bpy.types.Operator):
     @classmethod
     def poll(self, context):
         return enable_if(context, 'ARMATURE')
-        
+
     def execute(self, context):
         ob = context.active_object
         if ob.type == "ARMATURE":
@@ -373,7 +373,7 @@ class ARMATURE_OT_SetBoneHierarchy(bpy.types.Operator):
         vm = context.mode
         is_mode('EDIT_ARMATURE', 'EDIT')
 
-        # TODO: adicionar um seletor.
+        # TODO: add seletor (or switch?) to choose between standard ValveBiped or procedural.
         # ValveBiped Hierarchy
         v = 'ValveBiped.Bip01_'
         hierarchy(v+'Pelvis', "")
@@ -473,6 +473,46 @@ class ARMATURE_OT_SetBoneHierarchy(bpy.types.Operator):
         set_mode(vm)
 
         return {'FINISHED'}
+
+
+class ARMATURE_OT_CreateVertexGroups(bpy.types.Operator):
+    """Enforce minimal ValveBiped Vertex Groups"""
+    bl_idname = "valve.mesh_vertex_groups"
+    bl_label = "ValveBiped Vertex Groups"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
+
+    def execute(self, context):
+        set_mode('EDIT')
+        v = 'ValveBiped.Bip01_'
+        vgs = {
+            v+'Pelvis',
+            v+'Spine',
+            v+'Spine1',
+            v+'Spine2',
+            v+'Spine4',
+            v+'Neck1',
+            v+'Head1',
+            v+'L_Clavicle',
+            v+'L_UpperArm',
+            v+'L_Forearm',
+            v+'L_Hand',
+            v+'R_Clavicle',
+            v+'R_UpperArm',
+            v+'R_Forearm',
+            v+'R_Hand',
+            v+'L_Thigh',
+            v+'L_Calf',
+            v+'L_Foot',
+            v+'R_Thigh',
+            v+'R_Calf',
+            v+'R_Foot',
+        }
+        for vg in vgs:
+            create_vertex_group(vg)
 
 
 class VALVE_OT_ConnectBones(bpy.types.Operator):

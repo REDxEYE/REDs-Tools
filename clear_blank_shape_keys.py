@@ -6,25 +6,21 @@
 
 import bpy
 import numpy as np
-from .operators import enable_if
-
-# Tolerance to small differences, change it if you want
-tolerance = 0.00001
 
 class MESH_OT_clear_blank_shape_keys(bpy.types.Operator):
-    """batch exports all Actions into its own file.
-    use with Blender Source Tools"""
+    """Remove Shape Keys from all selected objects which have no flex / morphs data"""
     bl_idname = "mesh.clear_blank_shape_keys"
     bl_label = "Remove Blank Shape Keys"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(self, context):
-        enable_if(context, 'MESH')
+        if bpy.context.mode != 'OBJECT':
+            self.poll_message_set("Current Mode not \"Object Mode\"")
+            return False
+        return True
 
     def execute(self, context):
-        assert context.mode == 'OBJECT', "Must be in object mode!"
-
         for ob in context.selected_objects:
             # allow search over all selected objects but iterate only with MESH
             if ob.type != 'MESH': continue
@@ -52,8 +48,9 @@ class MESH_OT_clear_blank_shape_keys(bpy.types.Operator):
                 rel_locs = cache[kb.relative_key.name]
 
                 locs -= rel_locs
-                if (np.abs(locs) < tolerance).all():
+                if (np.abs(locs) < 0.00001).all():
                     to_delete.append(kb.name)
 
             for kb_name in to_delete:
                 ob.shape_key_remove(ob.data.shape_keys.key_blocks[kb_name])
+        return {'FINISHED'}

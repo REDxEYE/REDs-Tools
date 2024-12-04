@@ -151,6 +151,7 @@ class VALVE_OT_CreateFACS(bpy.types.Operator):
 
                 for Actor in FACS:
                         print(Actor)
-                        obj.shape_key_add(name=Actor)
+                        if not Actor in obj.data.shape_keys.key_blocks:
+                                obj.shape_key_add(name=Actor)
 
         return {'FINISHED'}

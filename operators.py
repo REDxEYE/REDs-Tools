@@ -604,25 +604,7 @@ class VALVE_OT_MergeBoneWeights(bpy.types.Operator):
         return {'FINISHED'}
 
 
-''' NOTE: super seeded by bpy.ops.pose.constraints_clear()
-class VALVE_OT_CleanBonesConstraints(bpy.types.Operator):
-    bl_idname = "valve.cleanbonesconstraints"
-    bl_label = "Remove constraints"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ob = context.active_object
-        if ob.type == "ARMATURE":
-            for bone in ob.pose.bones:
-                for c in bone.constraints:
-                    bone.constraints.remove(c)
-        else:
-            self.report({"ERROR"},
-                        "What? What am I supposed to do with this {}? I need armature!!!! GIVE ME MY ARMATURE!"
-                        .format(ob.type.lower()))
-        return {'FINISHED'}
-
-
+'''
 class VALVE_OT_RenameBoneChains(bpy.types.Operator):
     bl_idname = "valve.renamebonechain"
     bl_label = "Rename chain"

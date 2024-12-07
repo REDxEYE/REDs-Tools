@@ -162,7 +162,7 @@ class VALVE_OT_CreateFACS(bpy.types.Operator):
 
     def execute(self, context):
         for obj in context.selected_objects:
-            if obj.type == 'MESH': continue
+            if obj.type != 'MESH': continue
             if obj.data.shape_keys is None:
                 obj.shape_key_add(name="baseline")
 

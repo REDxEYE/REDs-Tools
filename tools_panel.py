@@ -145,7 +145,6 @@ class VALVE_PT_MeshTools(View3DTools, bpy.types.Panel):
         row.operator('red_utils.shapekey_to_relative', text="To relative")
         row.operator('red_utils.shapekey_to_absolute', text="To absolute")
 
-'''
 class VALVE_PT_TextureTools(View3DTools, bpy.types.Panel):
     """All related options related to Image edits"""
     bl_idname = 'valve.texture_panel'
@@ -168,4 +167,3 @@ class VALVE_PT_TextureTools(View3DTools, bpy.types.Panel):
         row = col.row(align=True)
 
         row.operator("alpha.split")
-'''

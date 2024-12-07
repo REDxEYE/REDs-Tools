@@ -12,7 +12,6 @@ from . import copy_pose
 from . import qc_eyes
 from . import batch_smd_export
 from . import empty_to_bones
-from . import copy_procedural
 from . import setup_armature
 from . import clear_blank_shape_keys
 
@@ -143,7 +142,6 @@ classes = [
     create_facs.VALVE_OT_CreateFACS,
     batch_smd_export.VALVE_OT_BatchExportActions,
     batch_smd_export.VALVE_OT_BatchExportActionsRetarget,
-    copy_procedural.VALVE_OT_ProceduralBone,
     setup_armature.ARMATURE_OT_SetupBones,
     empty_to_bones.ARMATURE_OT_empty_to_armature,
     clear_blank_shape_keys.MESH_OT_clear_blank_shape_keys,

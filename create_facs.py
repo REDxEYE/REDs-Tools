@@ -1,28 +1,40 @@
 ##############################################################
 # Purpose:
-#   Criar Shape Keys que são necessários para FACS.dmx
-#   Essa é a lista de FACS necessários para uso desse repo.
+#   Create Shape Keys necessary for FACS.dmx
+#   This is the list of FACS required for using this repository.
 #
-# Notas:
-#   Cada FAC com sufixo Z deve ser interpretado como sufixo "E".
-#   O correto seria usar sufixo "E", mas, a Valve usou "Z" no lugar
-#   Então, para cada FAC onde sufixo originalmente seria:
-#     A  == Intensidade Mínima
-#     B  == Intensidade Sutil
-#     C  == Intensidade Moderada
-#     D  == Intensidade Forte
-#     E  == Intensidade Máxima
+# Notes:
+#   Each Valve "Z" suffix FAC must be interpreted as "D" suffix FAC.
+#   "D" is the correct name convention, however,
+#   Valve decided to use "Z" instead.
+#   So, while each FACs where the original suffix would be:
+#     A  == Minimum Intensity
+#     B  == Subtle Intensity
+#     C  == Moderate Intensity
+#     D  == Strong Intensity
+#     E  == Maximum Intensity
+#     L  == Only Left side
+#     R  == Only Right side
+#     U  == Unique Bilateral side
+#     UA == Unique Asymmetric side
 #
-#   Nesse repositório interprete como:
-#     L  == Somente Lado Esquerdo
-#     R  == Somente Lado Direito
-#     U  == Somente Lado Superior
-#     D  == Somente Lado Inferior
-#     SL == Movimenta ambos lados para Esquerda
-#     SR == Movimenta ambos lados para Direita
-#     SU == Movimenta ambos lados para Cima
-#     SD == Movimenta ambos lados para Baixo
-#     Z  == Extrema Intensidade
+#   In this repository, interpret as:
+#     L  == Only Left side
+#     R  == Only Right side
+#     U  == Only Upper side
+#     D  == Only Lower side
+#     SL == Both sides to the Left
+#     SR == Both sides to the Right
+#     SU == Both sides to the Upward
+#     SD == Both sides to the Downward
+#     Z  == Extreme Intensity
+#
+#   If you're curious about the prefixes:
+#     AU == Action Unit
+#     AD == Action Descriptor
+#     EM == Eye Motion
+#     GB == Gross Behavior
+#     TM == Tongue Motion
 #
 #  por: Davi (Debiddo) Gooz
 ##############################################################
@@ -39,6 +51,7 @@ FACS = [
 #"f02",      # same as EM63 (disabled for my preset)
 #"f03",      # same as EM64 (disabled for my preset)
 #"f04",      # same as AU44 (disabled for my preset)
+#"EM0" ,     # eye baseline (if required)
  "AU0",      # baseline / default / rest
  "AU1",      # inner_brow_raiser
  "AU1AU2",   # 
@@ -78,19 +91,19 @@ FACS = [
  "AU27",     # mouth_stretch
  "AU27Z",    # mouth_stretch_extreme
  "AU28",     # lip_suck
-#"AD29",     # jaw_front
-#"AD29B",    # jaw_back
+#"AD29",     # jaw_front / jaw_thrust
+#"AD29B",    # jaw_back / jaw_thrust
  "AD30R",    # jaw_sideways
  "AD30L",    # jaw_sideways
- "AD31",     # jaw_clencher / AD31
- "AD32",     # bite / lip_bite AD32
+ "AD31",     # jaw_clencher / masseter / AU31
+ "AD32",     # bite / lip_bite (Valve: AU32)
 #"AD33",     # lip_blow
 #"AD34",     # lip_snort
 #"AD35",     # cheek_suck
 #"AU36",     # fac_name
 #"AU37",     # fac_name
- "AU38",     # dilator / nose_dilator
-#"AU39",     # contract / nose_contract
+ "AU38",     # dilator / nose_dilator / nostril_dilator
+#"AU39",     # contract / nose_contract / nostril_compressor
 #"GB40",     # sniff
  "AU41",     # lid_droop
 #"AU42",     # lid_slit
@@ -98,12 +111,16 @@ FACS = [
  "AU44",     # lid_squint
  "AU45",     # lid_closer / blink
 #"AU46",     # eye_wink
+#"GB50",     # speech
 #"EM61",     # eye_turn_left
 #"EM62",     # eye_turn_right
  "EM63",     # eye_turn_up
  "EM64",     # eye_turn_down
 #"GB80",     # neck_swallow
 #"GB81",     # neck_chew
+#"GB82",     # shrug / shoulder_shrug
+#"GB84",     # head_shake
+#"GB85",     # nod / head_nod
 #"AU90",     # tongue_up
 #"AU91",     # tongue_down
 #"AU92",     # tongue_to_left
@@ -144,14 +161,14 @@ class VALVE_OT_CreateFACS(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        obj = bpy.context.active_object
-        if obj.type == 'MESH':
-                if obj.data.shape_keys is None:
-                        obj.shape_key_add(name="baseline")
+        for obj in context.selected_objects:
+            if obj.type == 'MESH': continue
+            if obj.data.shape_keys is None:
+                obj.shape_key_add(name="baseline")
 
-                for Actor in FACS:
-                        print(Actor)
-                        if not Actor in obj.data.shape_keys.key_blocks:
-                                obj.shape_key_add(name=Actor)
+            for Actor in FACS:
+                print(Actor)
+                if not Actor in obj.data.shape_keys.key_blocks:
+                    obj.shape_key_add(name=Actor)
 
         return {'FINISHED'}

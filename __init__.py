@@ -42,10 +42,34 @@ bone_dict = [ # exists to select which active dict to rename bones
     ("tf2_blender",      "Team Fortress 2 to Blender",                 "Rename from: Team Fortress 2\nto: Blender Format", 8),
     ("bio3_tf2",         "Bioshock 3 to Team Fortress 2",              "Rename from: Bioshock 3\nto: Team Fortress 2 Format", 9),
 ]
+
 eyelid_format = [
     ("dmxeyelid", "DMX", "Use DMX file for eyelid shapes (recommended)", 0),
     ("eyelid", "VTA", "Use VTA file for eyelid shapes (deprecated)", 1),
 ]
+
+name_formats = [
+    ("BIP", "Bip", "", 0),
+    ("VALVEBIPED", "Valvebiped", "", 1),
+]
+
+bone_chains = [
+    ('LARM', 'Left collar-hand chain', "", 0),
+    ('RARM', 'Right collar-hand chain', "", 1),
+    ('LLEG', 'Left hip-toe chain', "", 2),
+    ('RLEG', 'Right hip-toe chain', "", 3),
+    ('LTUMB', 'Left thumb finger', "", 4),
+    ('RTUMB', 'Right thumb finger', "", 5),
+    ('LINDX', 'Left index finger', "", 6),
+    ('RINDX', 'Right index finger', "", 7),
+    ('LMIDL', 'Left middle finger', "", 8),
+    ('RMIDL', 'Right middle finger', "", 9),
+    ('LRNG', 'Left ring finger', "", 10),
+    ('RRNG', 'Right ring finger', "", 11),
+    ('LPNK', 'Left pinky finger', "", 12),
+    ('RPNK', 'Right pinky finger', "", 13),
+]
+
 forward_axis = [
     ("X", "X", "", 0),
     ("Y", "Y", "", 1),
@@ -72,13 +96,8 @@ classes = [
     operators.ARMATURE_OT_SetBoneHierarchy,
     operators.MESH_OT_MirrorValveBiped,
 
-    tools_panel.VALVE_PT_ToolsPanel,
-    tools_panel.VALVE_PT_MeshTools,
-    tools_panel.VALVE_PT_ArmatureTools,
-    tools_panel.VALVE_PT_TextureTools,
-    tools_panel.VALVE_PT_TrasnferShapes,
-    tools_panel.VALVE_PT_RenameTools,
-    tools_panel.VIEW3D_PT_ToolsPanel,
+    tools_panel.VIEW3D_PT_TOOLSPANEL,
+    tools_panel.VIEW3D_PT_MeshTools,
     tools_panel.VIEW3D_PT_ArmatureTools,
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_ShapesKeyTools,

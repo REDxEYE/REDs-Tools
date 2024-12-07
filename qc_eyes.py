@@ -12,7 +12,7 @@ class VALVE_PT_QcEyes(View3DTools, bpy.types.Panel):
     '''Visible painel at 3D Viewport'''
     #bl_idname = 'valve.qc_eyes'
     bl_label = 'Qc eyes tools'
-    bl_parent_id = 'VALVE_PT_TOOLSPANEL'
+    bl_parent_id = 'VIEW3D_PT_TOOLSPANEL'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):

@@ -9,7 +9,7 @@ from bpy.props import *
 
 def enable_if(context, is_mode):
     '''return True if active object mode match is_mode'''
-    return context.active_object and context.active_object.type == is_mode
+    return ( context.active_object and context.active_object.type == is_mode )
 
 
 def get_bonechain(val):
@@ -260,23 +260,16 @@ class VALVE_OT_RenameBonesTo(bpy.types.Operator):
 
     def execute(self, context):
         ob = context.active_object
-        if not ob:
-            self.report({"ERROR"}, "Select something!")
-            return {'FINISHED'}
-        if ob.type == "ARMATURE":
-            bones = ob.data.bones
+        bones = ob.data.bones
+        names = dict()
 
-            names = bone_list_switch(bpy.context.scene.BoneList)
+        bone_list_switch(context.scene.BoneList)
 
-            if (bones):
-                for bone in bones:
-                    newName = names.get(bone.name)
-                    if (newName):
-                        bone.name = newName
-
-        else:
-            self.report({"ERROR"},
-                        "What is this? {} is not armature! I need armature!".format(ob.type.lower().title()))
+        if (bones):
+            for bone in bones:
+                newName = names.get(bone.name)
+                if (newName):
+                    bone.name = newName
         return {'FINISHED'}
 
 
@@ -522,70 +515,91 @@ class VALVE_OT_ConnectBones(bpy.types.Operator):
 
     @classmethod
     def poll(self, context):
-        return True if context.active_object is not None and (context.active_object.type == 'ARMATURE') else False
+        return enable_if(context, 'ARMATURE')
 
 
     def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        for bone_ in context.selected_editable_bones:
+        set_mode('EDIT')
+        select_bones_if_nothing
+        for bone in context.selected_editable_bones:
 
-            if bone_.parent:
-                parent = bone_.parent
+            if bone.parent:
+                parent = bone.parent
                 if len(parent.children) > 1:
-                    bone_.use_connect = False
+                    bone.use_connect = False
                     parent.tail = sum([ch.head for ch in parent.children], Vector()) / len(parent.children)
                 else:
-                    parent.tail = bone_.head
-                    bone_.use_connect = True
-                    if bone_.children == 0:
-                        par = bone_.parent
+                    parent.tail = bone.head
+                    bone.use_connect = True
+                    if bone.children == 0:
+                        par = bone.parent
                         if par.children > 1:
                             pass
-                        bone_.tail = bone_.head + (par.tail - par.head)
-                    if not bone_.parent and bone_.children > 1:
-                        bone_.tail = (bone_.head + bone_.tail) * 2
-                if bone_.head == parent.head:
-                    print(bone_.name)
-                    bone_.tail = parent.tail
-                elif not bone_.children:
-                    vec = bone_.parent.head - bone_.head
-                    bone_.tail = bone_.head - vec / 2
+                        bone.tail = bone.head + (par.tail - par.head)
+                    if not bone.parent and bone.children > 1:
+                        bone.tail = (bone.head + bone.tail) * 2
+                if bone.head == parent.head:
+                    print(bone.name)
+                    bone.tail = parent.tail
+                elif not bone.children:
+                    vec = bone.parent.head - bone.head
+                    bone.tail = bone.head - vec / 2
 
         bpy.ops.armature.calculate_roll(type='GLOBAL_POS_Z')
-        bpy.ops.object.mode_set(mode='POSE')
+        set_mode('POSE')
         return {'FINISHED'}
 
 
 class VALVE_OT_MergeBoneWeights(bpy.types.Operator):
-    """this works?
-    seems it try to join weights from all selected bones to active bone"""
+    """Create many VertexWeightMixModifier as selected to merge the Weight Paint to Active Parent Bone
+    This is not destructive!"""
     bl_idname = "valve.armature_merge"
     bl_label = "Merge bone weights"
 
     @classmethod
-    def poll(self, context):
-        if (context.active_object):
-            if context.active_object.type == 'ARMATURE':
-                if context.active_object.mode == 'POSE':
-                    return True
-        return False
+    def poll(cls, context):
+        ob = context.active_object
+        if not (ob):
+            cls.poll_message_set("Nothing Selected")
+            return False
+        if not (ob.type == 'ARMATURE'):
+            cls.poll_message_set("Selected Object is not an Armature")
+            return False
+        if (ob.children == None):
+            cls.poll_message_set("Missing child Objects")
+            return False
+        n = 0
+        for child in ob.children:
+            if child.type == 'MESH':
+                n=n+1
+        if n == 0:
+            cls.poll_message_set("Missing child MESH Objects")
+            return False
+        if not (ob.mode == 'POSE'):
+            cls.poll_message_set("You need be in Pose Mode")
+            return False
+        if not (len(context.selected_pose_bones_from_active_object) > 1):
+            cls.poll_message_set("You need Select more than one Bone")
+            return False
+        return True
 
     def execute(self, context):
         this = context.active_pose_bone
         others = context.selected_pose_bones[1:]
         arm = this.id_data
-        for other in others:
+        for other in others: # NOTE: need avoid: this == other case
             for child in arm.children:
-                # print(child)
                 if child.type == 'MESH':
                     modifier = child.modifiers.new(type='VERTEX_WEIGHT_MIX', name='MERGE_{}_TO_{}'.format(other.name,this.name))
-                    # print(modifier, this, other)
-                    # print(child, child.type, modifier, this, other)
                     modifier.vertex_group_a = this.name
                     modifier.vertex_group_b = other.name
                     modifier.mix_mode = 'ADD'
                     modifier.mix_set = 'ALL'
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modifier.name)
+                    set_mode('OBJECT')
+                    context.view_layer.objects.active = child
+                    #bpy.ops.object.modifier_apply(modifier=modifier.name) # should we apply the modifier?
+        context.view_layer.objects.active = arm
+        set_mode('POSE')
 
         return {'FINISHED'}
 

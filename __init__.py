@@ -26,7 +26,7 @@ bl_info = {
     "location": "View3D > UI > Tool",
     "description": "Multi-purpose tools preparing armature for Source Engine export",
     'warning': '',
-    'wiki_url': 'https://github.com/rEDxEYE/REDs-Tools/wiki',
+    'wiki_url': 'https://github.com/REDxEYE/REDs-Tools/wiki',
     "category": "Tool"
 }
 

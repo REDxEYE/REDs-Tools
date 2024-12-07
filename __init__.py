@@ -1,8 +1,8 @@
 import bpy
 
-#from bpy.props import __all__
+from bpy.props import *
 
-#from . import texture_tools
+from . import texture_tools
 from . import tools_panel
 from . import operators
 from . import mesh_operators
@@ -77,6 +77,29 @@ forward_axis = [
 ]
 
 
+class IMAGE_MT_AlphaSplit(bpy.types.Operator):
+    """Extracts alpha to new file"""
+    bl_idname = "alpha.split"
+    bl_label = "Split alpha"
+    bl_options = {'UNDO'}
+
+    def execute(self, context):
+        sima = context.space_data
+        ima = sima.image
+        texture_tools.split_alpha(ima)
+        return {'FINISHED'}
+
+
+def get_bonechain_id(val):
+    for a in bone_chains:
+        if a[0] == val:
+            return a[-1]
+
+
+def split_alpha_menu(self, context):
+    self.layout.operator(IMAGE_MT_AlphaSplit.bl_idname, text='Split alpha')
+
+
 classes = [
     mesh_operators.SHAPE_KEYS_OT_TransferShapes,
     mesh_operators.SHAPE_KEYS_OT_BakeShapeKey,
@@ -99,6 +122,7 @@ classes = [
     tools_panel.VIEW3D_PT_TOOLSPANEL,
     tools_panel.VIEW3D_PT_MeshTools,
     tools_panel.VIEW3D_PT_ArmatureTools,
+    tools_panel.VIEW3D_PT_TextureTools,
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_ShapesKeyTools,
 
@@ -125,7 +149,7 @@ classes = [
     clear_blank_shape_keys.MESH_OT_clear_blank_shape_keys,
 
     # texture_tools
-    #texture_tools.IMAGE_MT_AlphaSplit
+    IMAGE_MT_AlphaSplit
 ]
 register_, unregister_ = bpy.utils.register_classes_factory(classes)
 

@@ -2,12 +2,29 @@ import bpy
 
 from bpy.props import *
 import numpy as np
+from .operators import enable_if
 
 
 class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
+    '''Transferer Shape Keys from one geometry to another.
+    The closer the mesh, the better results.'''
     bl_idname = "red_utils.transfer_shapes"
     bl_label = "Transfer shapes"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        objs = context.selected_objects
+        if len(objs) < 2:
+            self.poll_message_set("Selected two objects.")
+            return False
+        if objs[0].type != 'MESH':
+            self.poll_message_set("Active Object is not a Mesh.")
+            return False
+        if objs[1].type != 'MESH':
+            self.poll_message_set("Impossible to transferer Shape Keys from a Object which is not a Mesh.")
+            return False
+        return True
 
     def execute(self, context):
         objs = context.selected_objects
@@ -15,6 +32,10 @@ class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
 
         objs.remove(target)
         source = objs[0]
+
+        if source.data.shape_keys is None:
+            self.report({'ERROR'}, "The selected Mesh doesn't have Shape Keys to Transferer.")
+            return {'ERROR'}
 
         src_vertices = np.zeros((len(source.data.vertices) * 3,), dtype=np.float32)
         source.data.vertices.foreach_get('co', src_vertices)
@@ -27,8 +48,8 @@ class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
             src_shape_key.data.foreach_get('co', src_shape_vertices)
 
             delta = src_shape_vertices - src_vertices
-            if target.data.shape_keys.key_blocks == 0:
-                target.shape_key_add(name="base")
+            if target.data.shape_keys is None:
+                target.shape_key_add(name="baseline")
 
             shape = target.shape_key_add(name=src_shape_key.name)
 
@@ -38,12 +59,20 @@ class SHAPE_KEYS_OT_TransferShapes(bpy.types.Operator):
 
 
 class SHAPE_KEYS_OT_BakeShapeKey(bpy.types.Operator):
+    '''Bake a pair of new Shape Keys from the active Shape Key to 0 .. 1 range.'''
     bl_idname = "red_utils.bake_shape_ranges"
     bl_label = "Bake shape key min/max values"
     bl_options = {'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
+
     def execute(self, context):
         target = context.active_object
+        if target.data.shape_keys is None:
+            self.report({"ERROR"}, "The selected Mesh doesn't have Shape Keys to Bake.")
+            return {'ERROR'}
         active_shape_key_id = target.active_shape_key_index
 
         shape_key = target.data.shape_keys.key_blocks[active_shape_key_id]
@@ -68,9 +97,14 @@ class SHAPE_KEYS_OT_BakeShapeKey(bpy.types.Operator):
 
 
 class SHAPE_KEY_OT_BakeShapeKeyModifiers(bpy.types.Operator):
+    '''This is mostly an alternative to build-in blender function'''
     bl_idname = "red_utils.bake_shape"
     bl_label = "Bake mesh with shape keys"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
 
     def get_evaluated_object(self, ob):
         depth = bpy.context.evaluated_depsgraph_get()
@@ -118,9 +152,14 @@ class SHAPE_KEY_OT_BakeShapeKeyModifiers(bpy.types.Operator):
 
 
 class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
+    '''Create Stereo balances for the Active Object.'''
     bl_idname = "red_utils.create_stereo_split"
     bl_label = "Create stereo split"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
 
     def execute(self, context):
         source = context.active_object
@@ -150,6 +189,10 @@ class SHAPE_KEY_OT_CreateCorrectorShapeKey(bpy.types.Operator):
     bl_label = "Create a corrector shape key"
     bl_options = {'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
+
     def execute(self, context):
         obj = context.active_object
 
@@ -172,6 +215,10 @@ class SHAPE_KEY_OT_ShapeKeyToRelative(bpy.types.Operator):
     bl_idname = "red_utils.shapekey_to_relative"
     bl_label = "Convert corrective shape key to relative"
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(self, context):
+        return enable_if(context, 'MESH')
 
     def execute(self, context):
         obj = context.active_object

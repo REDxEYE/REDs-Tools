@@ -246,7 +246,7 @@ class SHAPE_KEY_OT_SplitToStereo(bpy.types.Operator):
             shape_key = shape_keys[shape_key_name]
             if shape_key.mute:
                 continue
-
+            is_combo = False
             if "_" in shape_key.name:
                 parts = shape_key.name.split("_")
                 should_split = False
@@ -257,15 +257,32 @@ class SHAPE_KEY_OT_SplitToStereo(bpy.types.Operator):
                     break
                 if not should_split:
                     continue
+                is_combo = True
 
             shape_key.data.foreach_get('co', shape_vertices.ravel())
             shape_vertices = shape_vertices - src_vertices
-            shape_key.data.foreach_set('co', (src_vertices + (shape_vertices * balance[:, None])).ravel())
+            shape_key.data.foreach_set('co', (src_vertices + (shape_vertices * (1-balance)[:, None])).ravel())
             target_index = shape_keys.find(shape_key_name) + 1
-            shape_key.name = shape_key_name + ".R"
+            if is_combo:
+                parts = shape_key_name.split("_")
+                new_name = []
+                for part in parts:
+                    new_name.append((part + ".L") if part in stereo else part)
+                shape_key.name = "_".join(new_name)
+            else:
+                shape_key.name = shape_key_name + ".L"
 
-            new_shape_key = obj.shape_key_add(name=shape_key_name + ".L", from_mix=True)
-            new_shape_key.data.foreach_set('co', (src_vertices + (shape_vertices * (1 - balance)[:, None])).ravel())
+            new_shape_key = obj.shape_key_add(name=shape_key_name + ".R", from_mix=True)
+            if is_combo:
+                parts = shape_key_name.split("_")
+                new_name = []
+                for part in parts:
+                    new_name.append((part + ".R") if part in stereo else part)
+                new_shape_key.name = "_".join(new_name)
+            else:
+                new_shape_key.name = shape_key_name + ".R"
+
+            new_shape_key.data.foreach_set('co', (src_vertices + (shape_vertices * balance[:, None])).ravel())
 
             new_index = shape_keys.find(new_shape_key.name)
 

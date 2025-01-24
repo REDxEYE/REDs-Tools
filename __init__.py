@@ -81,6 +81,7 @@ classes = [
     mesh_operators.SHAPE_KEY_OT_CreateCorrectorShapeKey,
     mesh_operators.SHAPE_KEY_OT_ShapeKeyToAbsolute,
     mesh_operators.SHAPE_KEY_OT_ShapeKeyToRelative,
+    mesh_operators.SHAPE_KEY_OT_SplitToStereo,
 
     rename_bones.BONE_OT_RenameButtonBip,
     rename_bones.BONE_OT_RenameButtonValveBiped,

@@ -139,10 +139,10 @@ class SHAPE_KEY_OT_CreateStereoSplit(bpy.types.Operator):
 
         weight_group = source.vertex_groups.get('__BALANCE_L', None) or source.vertex_groups.new(name='__BALANCE_L')
         for n, v in enumerate(balance):
-            weight_group.add([n], v, 'REPLACE')
+            weight_group.add([n], 1 - v, 'REPLACE')
         weight_group = source.vertex_groups.get('__BALANCE_R', None) or source.vertex_groups.new(name='__BALANCE_R')
         for n, v in enumerate(balance):
-            weight_group.add([n], 1 - v, 'REPLACE')
+            weight_group.add([n], v, 'REPLACE')
         return {'FINISHED'}
 
 
@@ -214,4 +214,64 @@ class SHAPE_KEY_OT_ShapeKeyToAbsolute(bpy.types.Operator):
                     part_shape_key.data.foreach_get('co', shape_vertices)
                     full_corrective -= (mesh_vertices - shape_vertices)
                 shape_key.data.foreach_set('co', full_corrective)
+        return {'FINISHED'}
+
+
+class SHAPE_KEY_OT_SplitToStereo(bpy.types.Operator):
+    bl_idname = "red_utils.shapekey_split_to_stereo"
+    bl_label = "Split non-muted shape keys into left-right"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        obj = context.active_object
+
+        split_axis = context.scene.ForwardAxis
+        split_power = context.scene.SplitPower
+        axis_id = {"X": 0, "Y": 1, "Z": 2}[split_axis]
+
+        src_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32).reshape(-1,3)
+        obj.data.vertices.foreach_get('co', src_vertices.ravel())
+        dimm = src_vertices.max() - src_vertices.min()
+        balance_width = dimm * (1 - split_power)
+        balance = src_vertices[:, axis_id]
+        balance = np.clip((-balance / balance_width / 2) + 0.5, 0, 1)
+
+        shape_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32).reshape(-1,3)
+
+        shape_keys = obj.data.shape_keys.key_blocks
+        stereo = [s.name for s in shape_keys[1:] if not s.mute]
+
+        shape_key_names = [s.name for s in shape_keys[1:]]
+        for shape_key_name in shape_key_names:
+            shape_key = shape_keys[shape_key_name]
+            if shape_key.mute:
+                continue
+
+            if "_" in shape_key.name:
+                parts = shape_key.name.split("_")
+                should_split = False
+                for part in parts:
+                    if part not in stereo:
+                        continue
+                    should_split = True
+                    break
+                if not should_split:
+                    continue
+
+            shape_key.data.foreach_get('co', shape_vertices.ravel())
+            shape_vertices = shape_vertices - src_vertices
+            shape_key.data.foreach_set('co', (src_vertices+(shape_vertices * balance[:,None])).ravel())
+            target_index = shape_keys.find(shape_key_name) + 1
+            shape_key.name = shape_key_name + ".R"
+
+            new_shape_key = obj.shape_key_add(name=shape_key_name+".L", from_mix=True)
+            new_shape_key.data.foreach_set('co', (src_vertices+(shape_vertices * (1 - balance)[:,None])).ravel())
+
+            new_index = shape_keys.find(new_shape_key.name)
+
+            while new_index > target_index:
+                bpy.context.object.active_shape_key_index = new_index
+                bpy.ops.object.shape_key_move(type='UP')
+                new_index -= 1
+
         return {'FINISHED'}

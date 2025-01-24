@@ -138,6 +138,7 @@ class VIEW3D_PT_ShapesKeyTools(View3DTools, bpy.types.Panel):
         box.prop(scn, 'SplitPower')
         box.operator('red_utils.create_stereo_split')
         box.operator('red_utils.shapekey_split_to_stereo')
+        box.operator('red_utils.shapekey_merge_from_stereo')
         box = layout.box()
         box.operator('red_utils.create_corrector_shapekey')
         box.label(text="Relative <-> Absolute")

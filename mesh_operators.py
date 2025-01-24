@@ -313,11 +313,11 @@ class SHAPE_KEY_OT_MergeFromStereo(bpy.types.Operator):
 
         processed = []
         for name in stereo:
-            try:
+            # try:
                 if name in processed:
                     continue
                 shape_keys = obj.data.shape_keys.key_blocks
-                if name.endswith(".L"):
+                if name.endswith(".L") or ".L_" in name:
                     left = shape_keys[name]
                     right = shape_keys[name.replace(".L", ".R")]
                 else:
@@ -335,7 +335,9 @@ class SHAPE_KEY_OT_MergeFromStereo(bpy.types.Operator):
                 combo = shape_l_vertices + shape_r_vertices - src_vertices
                 left.data.foreach_set('co', combo.ravel())
                 left.name = left.name.replace(".L", "")
+                left.vertex_group = ""
+
                 obj.shape_key_remove(right)
-            except KeyError:
-                continue
+            # except KeyError:
+            #     continue
         return {'FINISHED'}

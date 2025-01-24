@@ -303,7 +303,7 @@ class SHAPE_KEY_OT_MergeFromStereo(bpy.types.Operator):
         obj = context.active_object
 
         shape_keys = obj.data.shape_keys.key_blocks
-        stereo = set([s.name for s in shape_keys[1:] if (".L" in s.name) or (".R" in s.name)])
+        stereo = [s.name for s in shape_keys[1:] if (".L" in s.name) or (".R" in s.name)]
 
         src_vertices = np.zeros((len(obj.data.vertices) * 3,), dtype=np.float32).reshape(-1, 3)
         obj.data.vertices.foreach_get('co', src_vertices.ravel())
@@ -313,26 +313,29 @@ class SHAPE_KEY_OT_MergeFromStereo(bpy.types.Operator):
 
         processed = []
         for name in stereo:
-            if name in processed:
-                continue
-            shape_keys = obj.data.shape_keys.key_blocks
-            if name.endswith(".L"):
-                left = shape_keys[name]
-                right = shape_keys[name.replace(".L", ".R")]
-            else:
-                left = shape_keys[name.replace(".R", ".L")]
-                right = shape_keys[name]
-            if left.name in processed:
-                continue
-            if right.name in processed:
-                continue
-            processed.append(left.name)
-            processed.append(right.name)
-            left.data.foreach_get('co', shape_l_vertices.ravel())
-            right.data.foreach_get('co', shape_r_vertices.ravel())
+            try:
+                if name in processed:
+                    continue
+                shape_keys = obj.data.shape_keys.key_blocks
+                if name.endswith(".L"):
+                    left = shape_keys[name]
+                    right = shape_keys[name.replace(".L", ".R")]
+                else:
+                    left = shape_keys[name.replace(".R", ".L")]
+                    right = shape_keys[name]
+                if left.name in processed:
+                    continue
+                if right.name in processed:
+                    continue
+                processed.append(left.name)
+                processed.append(right.name)
+                left.data.foreach_get('co', shape_l_vertices.ravel())
+                right.data.foreach_get('co', shape_r_vertices.ravel())
 
-            combo = shape_l_vertices + shape_r_vertices - src_vertices
-            left.data.foreach_set('co', combo.ravel())
-            left.name = left.name.replace(".L","")
-            obj.shape_key_remove(right)
+                combo = shape_l_vertices + shape_r_vertices - src_vertices
+                left.data.foreach_set('co', combo.ravel())
+                left.name = left.name.replace(".L", "")
+                obj.shape_key_remove(right)
+            except KeyError:
+                continue
         return {'FINISHED'}

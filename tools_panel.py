@@ -12,12 +12,7 @@ class VIEW3D_PT_ToolsPanel(View3DTools, bpy.types.Panel):
     bl_label = 'Source engine tools'
 
     def draw(self, context):
-        scn = context.scene
-        layout = self.layout
-        row = layout.row()
-        row.label(text="Target armature")
-        row.prop_search(scn, "Armature", scn, "objects", text='')
-
+        pass
 
 # noinspection PyPep8Naming
 class VIEW3D_PT_RenameTools(View3DTools, bpy.types.Panel):
@@ -87,6 +82,11 @@ class VIEW3D_PT_QcEyes(View3DTools, bpy.types.Panel):
     def draw(self, context):
         scn = context.scene
         layout = self.layout
+
+        row = layout.row()
+        row.label(text="Target armature")
+        row.prop_search(scn, "Armature", scn, "objects", text='')
+
 
         layout.use_property_split = True
         layout.use_property_decorate = False

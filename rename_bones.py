@@ -162,6 +162,7 @@ class BONE_OT_MergeBones(bpy.types.Operator):
             print(f"Armature '{armature}' is not armature!")
             return
 
+
         bpy.context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='EDIT')
 
@@ -210,6 +211,79 @@ class BONE_OT_MergeBones(bpy.types.Operator):
         arm_name = arm.name
         for other in others:
             self.delete_bone_and_transfer_weights(arm, other.name, this.name)
+        bpy.context.view_layer.objects.active = bpy.data.objects[arm_name]
+        bpy.ops.object.mode_set(mode='POSE')
+        return {'FINISHED'}
+
+class BONE_OT_CollapseBones(bpy.types.Operator):
+    bl_idname = "armature.collapse"
+    bl_label = "Collapse one bone into another"
+
+    def delete_bone_and_transfer_weights(self, armature, bone_to_delete, target_bone):
+        if armature.type != 'ARMATURE':
+            print(f"Armature '{armature}' is not armature!")
+            return
+
+
+        bpy.context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        if bone_to_delete not in armature.data.edit_bones:
+            print(f"Bone '{bone_to_delete}' not found in armature!")
+            return
+
+        if target_bone not in armature.data.edit_bones:
+            print(f"Target bone '{target_bone}' not found in armature!")
+            return
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        for obj in bpy.data.objects:
+            if obj.type == 'MESH':
+                for mod in obj.modifiers.values():
+                    if mod.type == "ARMATURE" and mod.object == armature:
+                        if obj.name not in bpy.context.view_layer.objects:
+                            continue
+                        bpy.context.view_layer.objects.active = obj
+                        bpy.ops.object.mode_set(mode='OBJECT')
+
+                        vg_delete = obj.vertex_groups.get(bone_to_delete)
+                        vg_target = obj.vertex_groups.get(target_bone)
+
+                        if vg_delete and vg_target:
+                            for vertex in obj.data.vertices:
+                                for group in vertex.groups:
+                                    if group.group == vg_delete.index:
+                                        weight_to_transfer = group.weight
+                                        vg_target.add([vertex.index], weight_to_transfer, 'ADD')
+
+                            obj.vertex_groups.remove(vg_delete)
+
+        bpy.context.view_layer.objects.active = armature
+        bpy.ops.object.mode_set(mode='EDIT')
+        armature.data.edit_bones.remove(armature.data.edit_bones[bone_to_delete])
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+        print(f"Bone '{bone_to_delete}' deleted and weights transferred to '{target_bone}'.")
+
+    def execute(self, context):
+        this = context.active_pose_bone
+        this_name = this.name
+        other = next(filter(lambda a: a != this, context.selected_pose_bones), None)
+        other_tail = other.tail.copy()
+        if others is None:
+            self.report({'WARNING'}, "Select at least two bones")
+            return {'CANCELLED'}
+        arm = this.id_data
+        arm_name = arm.name
+        for other in others:
+            self.delete_bone_and_transfer_weights(arm, other.name, this.name)
+
+        bpy.context.view_layer.objects.active = arm
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        arm.data.edit_bones[this_name].tail = other_tail
+
         bpy.context.view_layer.objects.active = bpy.data.objects[arm_name]
         bpy.ops.object.mode_set(mode='POSE')
         return {'FINISHED'}

@@ -90,6 +90,7 @@ classes = [
     rename_bones.BONE_OT_RenameChainButton,
     rename_bones.BONE_OT_ConnectBones,
     rename_bones.BONE_OT_MergeBones,
+    rename_bones.BONE_OT_CollapseBones,
 
     operators.EYES_OT_CreateEyeDummies,
     operators.EYES_OT_QCEyesPopup,
@@ -106,7 +107,6 @@ classes = [
     tools_panel.VIEW3D_PT_ArmatureTools,
     tools_panel.VIEW3D_PT_RenameTools,
     tools_panel.VIEW3D_PT_ShapesKeyTools,
-
 
     IMAGE_MT_AlphaSplit
 ]

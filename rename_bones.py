@@ -271,13 +271,12 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
         this_name = this.name
         other = next(filter(lambda a: a != this, context.selected_pose_bones), None)
         other_tail = other.tail.copy()
-        if others is None:
+        if other is None:
             self.report({'WARNING'}, "Select at least two bones")
             return {'CANCELLED'}
         arm = this.id_data
         arm_name = arm.name
-        for other in others:
-            self.delete_bone_and_transfer_weights(arm, other.name, this.name)
+        self.delete_bone_and_transfer_weights(arm, other.name, this.name)
 
         bpy.context.view_layer.objects.active = arm
         bpy.ops.object.mode_set(mode='EDIT')

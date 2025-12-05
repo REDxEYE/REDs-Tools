@@ -70,6 +70,7 @@ class VIEW3D_PT_ArmatureTools(View3DTools, bpy.types.Panel):
 
         box.operator('armature.connect')
         box.operator('armature.merge')
+        box.operator('armature.collapse')
 
 
 # noinspection PyPep8Naming

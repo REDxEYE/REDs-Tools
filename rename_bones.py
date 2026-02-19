@@ -224,7 +224,6 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
             print(f"Armature '{armature}' is not armature!")
             return
 
-
         bpy.context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='EDIT')
 
@@ -236,6 +235,7 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
             print(f"Target bone '{target_bone}' not found in armature!")
             return
 
+        bpy.context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for obj in bpy.data.objects:

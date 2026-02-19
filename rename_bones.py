@@ -162,9 +162,10 @@ class BONE_OT_MergeBones(bpy.types.Operator):
             print(f"Armature '{armature}' is not armature!")
             return
 
-
         bpy.context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='EDIT')
+        old_mirror_state = bpy.context.object.data.use_mirror_x
+        bpy.context.object.data.use_mirror_x = False
 
         if bone_to_delete not in armature.data.edit_bones:
             print(f"Bone '{bone_to_delete}' not found in armature!")
@@ -174,6 +175,7 @@ class BONE_OT_MergeBones(bpy.types.Operator):
             print(f"Target bone '{target_bone}' not found in armature!")
             return
 
+        bpy.context.object.data.use_mirror_x = old_mirror_state
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for obj in bpy.data.objects:
@@ -215,6 +217,7 @@ class BONE_OT_MergeBones(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='POSE')
         return {'FINISHED'}
 
+
 class BONE_OT_CollapseBones(bpy.types.Operator):
     bl_idname = "armature.collapse"
     bl_label = "Collapse one bone into another"
@@ -226,6 +229,8 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
 
         bpy.context.view_layer.objects.active = armature
         bpy.ops.object.mode_set(mode='EDIT')
+        old_mirror_state = bpy.context.object.data.use_mirror_x
+        bpy.context.object.data.use_mirror_x = False
 
         if bone_to_delete not in armature.data.edit_bones:
             print(f"Bone '{bone_to_delete}' not found in armature!")
@@ -234,8 +239,7 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
         if target_bone not in armature.data.edit_bones:
             print(f"Target bone '{target_bone}' not found in armature!")
             return
-
-        bpy.context.view_layer.objects.active = armature
+        bpy.context.object.data.use_mirror_x = old_mirror_state
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for obj in bpy.data.objects:
@@ -267,6 +271,9 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
         print(f"Bone '{bone_to_delete}' deleted and weights transferred to '{target_bone}'.")
 
     def execute(self, context):
+        old_mirror_state = bpy.context.object.data.use_mirror_x
+        bpy.context.object.data.use_mirror_x = False
+
         this = context.active_pose_bone
         this_name = this.name
         other = next(filter(lambda a: a != this, context.selected_pose_bones), None)
@@ -285,4 +292,6 @@ class BONE_OT_CollapseBones(bpy.types.Operator):
 
         bpy.context.view_layer.objects.active = bpy.data.objects[arm_name]
         bpy.ops.object.mode_set(mode='POSE')
+        bpy.context.object.data.use_mirror_x = old_mirror_state
+
         return {'FINISHED'}
